@@ -6,7 +6,7 @@
 const API = (() => {
   // ── Configuration ──────────────────────────────────────────────
   // Change this to your backend URL (e.g. Render) once deployed.
-  const BASE_URL = window.BACKEND_URL || 'http://localhost:8000';
+  const BASE_URL = window.BACKEND_URL || 'https://truthlens-api-yq9k.onrender.com';
 
   /**
    * Analyze text / URL via POST /analyze
