@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="AI-powered fake news detection platform. Analyze text, images, PDFs, and URLs for misinformation instantly." />
+  <title>TruthLens — AI Fake News Detector</title>
+
+  <!-- Google Fonts: swap prevents invisible text during load -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+  <noscript><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" /></noscript>
+
+  <!-- Icons (Phosphor) - load after page renders -->
+  <script src="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.1/src/index.js" defer></script>
+
+  <!-- Stylesheets -->
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <link rel="stylesheet" href="css/chat.css" />
+</head>
+<body>
+
+  <!-- Animated BG: 2 orbs (reduced from 3 for GPU performance) -->
+  <div class="bg-gradient-orbs" aria-hidden="true">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+  </div>
+
+  <!-- ===== SIDEBAR ===== -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <div class="logo-icon">
+          <i class="ph-fill ph-shield-check"></i>
+        </div>
+        <span class="logo-text">TruthLens</span>
+      </div>
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <i class="ph ph-list"></i>
+      </button>
+    </div>
+
+    <nav class="sidebar-nav" role="navigation" aria-label="Main navigation">
+      <ul>
+        <li>
+          <a href="#" class="nav-item active" data-section="dashboard" id="nav-dashboard">
+            <i class="ph-fill ph-squares-four"></i>
+            <span>Dashboard</span>
+            <div class="nav-glow"></div>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-section="chatbot" id="nav-chatbot">
+            <i class="ph-fill ph-chat-circle-dots"></i>
+            <span>Chatbot</span>
+            <div class="nav-glow"></div>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-section="demo" id="nav-demo">
+            <i class="ph-fill ph-newspaper"></i>
+            <span>Demo News</span>
+            <div class="nav-glow"></div>
+          </a>
+        </li>
+        <li>
+          <a href="#" class="nav-item" data-section="history" id="nav-history">
+            <i class="ph-fill ph-clock-counter-clockwise"></i>
+            <span>History</span>
+            <div class="nav-glow"></div>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="api-status" id="apiStatus">
+        <span class="status-dot"></span>
+        <span>API Connected</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ===== MAIN WRAPPER ===== -->
+  <div class="main-wrapper" id="mainWrapper">
+
+    <!-- TOP NAVBAR -->
+    <header class="topnav glass" role="banner">
+      <div class="topnav-left">
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Open menu">
+          <i class="ph ph-list"></i>
+        </button>
+        <h1 class="page-title" id="pageTitle">Dashboard</h1>
+      </div>
+      <div class="topnav-right">
+        <div class="search-pill">
+          <i class="ph ph-magnifying-glass"></i>
+          <span>Quick search...</span>
+        </div>
+        <button class="icon-btn" id="themeToggle" aria-label="Toggle theme">
+          <i class="ph ph-moon"></i>
+        </button>
+        <div class="avatar" aria-label="User avatar">
+          <span>AI</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== SECTIONS ===== -->
+    <main class="content" role="main">
+
+      <!-- ── DASHBOARD ── -->
+      <section class="section active" id="section-dashboard" aria-label="Dashboard">
+
+        <div class="section-hero">
+          <div>
+            <h2 class="section-heading">Welcome back 👋</h2>
+            <p class="section-sub">Your AI-powered truth verification dashboard</p>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+          <div class="stat-card glass" id="statTotal">
+            <div class="stat-icon indigo">
+              <i class="ph-fill ph-chart-bar"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Total Checks</span>
+              <span class="stat-value" data-target="0" id="counterTotal">0</span>
+            </div>
+            <div class="stat-sparkline">
+              <svg viewBox="0 0 80 30" class="sparkline" aria-hidden="true">
+                <polyline points="0,25 15,18 30,22 45,10 60,15 80,5" fill="none" stroke="url(#indGrad)" stroke-width="2"/>
+                <defs>
+                  <linearGradient id="indGrad" x1="0" y1="0" x2="1" y2="0">
+                    <stop offset="0%" stop-color="#4B5DFF"/>
+                    <stop offset="100%" stop-color="#FF6F91"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
+          <div class="stat-card glass" id="statFake">
+            <div class="stat-icon pink">
+              <i class="ph-fill ph-warning-circle"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Fake Detected</span>
+              <span class="stat-value" data-target="0" id="counterFake">0</span>
+            </div>
+            <div class="stat-badge danger">⚠ High risk</div>
+          </div>
+
+          <div class="stat-card glass" id="statReal">
+            <div class="stat-icon green">
+              <i class="ph-fill ph-check-circle"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Real Verified</span>
+              <span class="stat-value" data-target="0" id="counterReal">0</span>
+            </div>
+            <div class="stat-badge success">✓ Trusted</div>
+          </div>
+        </div>
+
+        <!-- Quick Analyze -->
+        <div class="quick-analyze glass">
+          <div class="qa-header">
+            <i class="ph-fill ph-lightning"></i>
+            <h3>Quick Analyze</h3>
+          </div>
+          <div class="qa-body">
+            <textarea id="quickInput" class="qa-input" placeholder="Paste a news headline or text snippet here…" rows="3" aria-label="Quick analyze input"></textarea>
+            <div class="qa-actions">
+              <button class="btn-primary" id="quickAnalyzeBtn">
+                <i class="ph ph-magnifying-glass"></i>
+                Analyze Now
+              </button>
+            </div>
+          </div>
+          <div class="qa-result hidden" id="qaResult"></div>
+        </div>
+
+        <!-- Accuracy Chart placeholder -->
+        <div class="chart-card glass">
+          <div class="chart-header">
+            <h3>Detection Accuracy Overview</h3>
+            <span class="chip">Last 7 days</span>
+          </div>
+          <div class="donut-wrapper" id="donutChart" aria-label="Accuracy chart">
+            <svg class="donut" viewBox="0 0 120 120" aria-hidden="true">
+              <circle cx="60" cy="60" r="48" fill="none" stroke="#1e1e2e" stroke-width="16"/>
+              <circle cx="60" cy="60" r="48" fill="none" stroke="url(#donutGrad)" stroke-width="16"
+                stroke-dasharray="200 100" stroke-linecap="round" transform="rotate(-90 60 60)" id="donutArc"/>
+              <defs>
+                <linearGradient id="donutGrad" x1="0" y1="0" x2="1" y2="1">
+                  <stop offset="0%" stop-color="#4B5DFF"/>
+                  <stop offset="100%" stop-color="#FF6F91"/>
+                </linearGradient>
+              </defs>
+            </svg>
+            <div class="donut-center">
+              <span class="donut-pct" id="donutPct">—</span>
+              <span class="donut-label">Real Rate</span>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ── CHATBOT ── -->
+      <section class="section" id="section-chatbot" aria-label="Chatbot">
+        <div class="chat-container">
+          <div class="chat-header glass">
+            <div class="chat-title">
+              <div class="bot-avatar">
+                <i class="ph-fill ph-robot"></i>
+              </div>
+              <div>
+                <h2>TruthBot</h2>
+                <span class="online-badge">● Online</span>
+              </div>
+            </div>
+            <div class="chat-actions">
+              <button class="icon-btn" id="clearChatBtn" title="Clear chat" aria-label="Clear chat">
+                <i class="ph ph-trash"></i>
+              </button>
+              <button class="icon-btn" id="exportChatBtn" title="Export chat" aria-label="Export chat">
+                <i class="ph ph-export"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="chat-messages" id="chatMessages" role="log" aria-live="polite" aria-label="Chat messages">
+            <!-- Welcome message -->
+            <div class="message bot fade-in" id="welcomeMsg">
+              <div class="msg-avatar bot-avatar-sm">
+                <i class="ph-fill ph-robot"></i>
+              </div>
+              <div class="msg-bubble bot-bubble">
+                <p>👋 Hello! I'm <strong>TruthBot</strong>, your AI-powered fact-checker.</p>
+                <p>Send me any news text, article URL, or upload an image/PDF and I'll analyze it for you!</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Typing indicator (hidden by default) -->
+          <div class="typing-indicator hidden" id="typingIndicator" aria-live="polite">
+            <div class="msg-avatar bot-avatar-sm">
+              <i class="ph-fill ph-robot"></i>
+            </div>-
+            <div class="typing-dots">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+          <!-- Input Area -->
+          <div class="chat-input-area glass" id="chatInputArea">
+            <div class="input-row">
+              <label class="upload-btn icon-btn" for="fileUpload" title="Upload image or PDF" aria-label="Upload file">
+                <i class="ph ph-paperclip"></i>
+                <input type="file" id="fileUpload" accept="image/*,.pdf" hidden />
+              </label>
+              <div class="input-wrapper">
+                <textarea
+                  id="chatInput"
+                  class="chat-textarea"
+                  placeholder="Type a news article, paste a URL, or upload a file…"
+                  rows="1"
+                  aria-label="Chat input"
+                ></textarea>
+                <span class="file-tag hidden" id="fileTag"></span>
+              </div>
+              <button class="send-btn" id="sendBtn" aria-label="Send message">
+                <i class="ph-fill ph-paper-plane-tilt"></i>
+              </button>
+            </div>
+            <div class="input-hints">
+              <span>Supports: Text · URL · Image · PDF</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ── DEMO NEWS ── -->
+      <section class="section" id="section-demo" aria-label="Demo News">
+        <div class="section-hero">
+          <div>
+            <h2 class="section-heading">Demo News Articles</h2>
+            <p class="section-sub">Click "Analyze" on any card to test the detector</p>
+          </div>
+          <div class="demo-filter">
+            <button class="chip active" data-filter="all">All</button>
+            <button class="chip" data-filter="politics">Politics</button>
+            <button class="chip" data-filter="health">Health</button>
+            <button class="chip" data-filter="tech">Tech</button>
+            <button class="chip" data-filter="science">Science</button>
+          </div>
+        </div>
+        <div class="demo-grid" id="demoGrid">
+          <!-- Rendered by demo.js -->
+        </div>
+      </section>
+
+      <!-- ── HISTORY ── -->
+      <section class="section" id="section-history" aria-label="History">
+        <div class="section-hero">
+          <div>
+            <h2 class="section-heading">Analysis History</h2>
+            <p class="section-sub">All your previous fact-check results</p>
+          </div>
+          <button class="btn-danger-sm" id="clearHistoryBtn">
+            <i class="ph ph-trash"></i> Clear All
+          </button>
+        </div>
+
+        <div class="history-filters">
+          <button class="filter-btn active" data-filter="all" id="filterAll">All</button>
+          <button class="filter-btn" data-filter="fake" id="filterFake">
+            <span class="dot fake"></span> Fake
+          </button>
+          <button class="filter-btn" data-filter="real" id="filterReal">
+            <span class="dot real"></span> Real
+          </button>
+        </div>
+
+        <div class="history-list" id="historyList">
+          <!-- Rendered by history.js -->
+        </div>
+
+        <div class="empty-state hidden" id="historyEmpty">
+          <i class="ph ph-file-dashed"></i>
+          <p>No history yet. Start analyzing!</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer" aria-live="assertive"></div>
+
+  <!-- JS Modules -->
+  <script src="js/api.js"></script>
+  <script src="js/history.js"></script>
+  <script src="js/chat.js"></script>
+  <script src="js/demo.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
