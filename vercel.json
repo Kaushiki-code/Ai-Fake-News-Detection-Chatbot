@@ -11,5 +11,10 @@
       "src": "/(.*)",
       "dest": "/frontend/$1"
     }
-  ]
+  ],
+  "env": {
+    "OPENROUTER_API_KEY": {
+      "description": "OpenRouter API key for AI analysis (get free key at https://openrouter.ai/keys)"
+    }
+  }
 }

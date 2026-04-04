@@ -1,19 +1,6 @@
-# Python
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-*.sqlite3
-
-# Virtual Environment
-venv/
-.venv/
-
 # Environment Variables
 .env
-
-# Uploads / temp files
-backend/uploads/
+.env.local
 
 # Node (if ever used)
 node_modules/
@@ -21,6 +8,10 @@ node_modules/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Editor
+.vscode/
+.idea/
 
 # Logs
 *.log

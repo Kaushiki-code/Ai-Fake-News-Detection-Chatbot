@@ -65,7 +65,63 @@ const Chat = (() => {
 
   // ── Build Result HTML ─────────────────────────────────────────
   function buildResultHTML(result) {
-    const isFake     = result.fake_or_real?.toLowerCase() === 'fake';
+    // Debug: log what we received
+    console.log('📊 Analysis Result:', result);
+    
+    // Determine if it's fake based on verdict or misinformation_type
+    // CRITICAL: If misinformation_type says "Fabricated Content", it MUST be fake
+    let isFake = false;
+    let debugReason = '';
+    
+    // OVERRIDE: Check misinformation_type FIRST for Fabricated Content
+    if (result.misinformation_type) {
+      const misLower = result.misinformation_type.toLowerCase();
+      
+      if (misLower === 'fabricated content') {
+        isFake = true;
+        debugReason = `misinformation_type="${result.misinformation_type}" (FABRICATED) → FORCE FAKE`;
+        console.log('⚠️ OVERRIDE: Fabricated Content detected → showing as FAKE NEWS');
+      } else if (misLower.includes('false') || misLower === 'propaganda') {
+        isFake = true;
+        debugReason = `misinformation_type="${result.misinformation_type}" → FAKE`;
+      } else if (misLower === 'accurate reporting') {
+        isFake = false;
+        debugReason = `misinformation_type="${result.misinformation_type}" → REAL`;
+      }
+    }
+    
+    // If not determined by misinformation_type, check verdict
+    if (debugReason === '') {
+      if (result.verdict) {
+        const verdictLower = result.verdict.toLowerCase();
+        debugReason = `verdict="${result.verdict}"`;
+        
+        // Check for False or Fabricated keywords (definitely fake)
+        if (verdictLower.includes('false') || verdictLower.includes('fabricated')) {
+          isFake = true;
+          debugReason += ' → FAKE (false/fabricated)';
+        } 
+        // Check for Misleading (also treat as problematic/fake)
+        else if (verdictLower.includes('misleading') || verdictLower.includes('partially true')) {
+          isFake = true;
+          debugReason += ' → FAKE (misleading/partially true)';
+        } 
+        // Check for True (real)
+        else if (verdictLower.includes('true') && !verdictLower.includes('partially')) {
+          isFake = false;
+          debugReason += ' → REAL (true)';
+        }
+      } else if (result.fake_or_real) {
+        // Legacy format fallback
+        const legacyLower = result.fake_or_real?.toLowerCase();
+        debugReason = `fake_or_real="${result.fake_or_real}"`;
+        isFake = legacyLower === 'fake';
+        debugReason += isFake ? ' → FAKE' : ' → REAL';
+      }
+    }
+    
+    console.log('🎯 Verdict Decision:', debugReason, '→', isFake ? '🚨 FAKE' : '✅ REAL');
+    
     const label      = isFake ? 'Fake News' : 'Real News';
     const badgeCls   = isFake ? 'badge-fake' : 'badge-real';
     const icon       = isFake ? 'ph-warning-circle' : 'ph-check-circle';

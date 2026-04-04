@@ -1,8 +1,7 @@
 # TruthLens — AI Fake News Detector
 
-> A premium full-stack AI web app for detecting fake news with a glassmorphism UI.
-
-![TruthLens Screenshot](frontend/assets/images/screenshot.png)
+> A lightweight, frontend-only AI web app for detecting fake news with a glassmorphism UI.
+> Deploy directly to Vercel in seconds! 🚀
 
 ---
 
@@ -10,172 +9,143 @@
 
 ```
 AI PROJECT_/
-├── frontend/                    ← Static SPA (Vercel)
-│   ├── index.html
+├── frontend/                    ← Complete Static App (Deploy to Vercel)
+│   ├── index.html               ← Main page
+│   ├── .env.local               ← Local API key (git-ignored)
+│   ├── .env.example             ← Template
 │   ├── css/
 │   │   ├── style.css            ← Global design system
 │   │   ├── dashboard.css        ← Dashboard styles
 │   │   └── chat.css             ← Chat + demo + history
 │   ├── js/
 │   │   ├── app.js               ← SPA navigation, toasts, ripple
-│   │   ├── api.js               ← Backend API client
+│   │   ├── api.js               ← OpenRouter API client
+│   │   ├── config.js            ← API key setup modal
 │   │   ├── chat.js              ← Chatbot logic
 │   │   ├── demo.js              ← Demo news cards
 │   │   └── history.js           ← localStorage history
 │   └── assets/
 │       ├── images/
 │       └── icons/
-├── backend/                     ← FastAPI server (Render)
-│   ├── app.py                   ← Entry point
-│   ├── routes/
-│   │   ├── analyze.py           ← POST /analyze (text/URL)
-│   │   └── upload.py            ← POST /analyze/upload (file)
-│   ├── services/
-│   │   ├── openrouter_api.py    ← AI analysis via OpenRouter
-│   │   ├── ocr_service.py       ← pytesseract OCR
-│   │   ├── pdf_service.py       ← pdfplumber extraction
-│   │   └── preprocessing.py    ← URL scraping + text cleaning
-│   ├── utils/
-│   │   └── helpers.py
-│   ├── uploads/                 ← Temp file storage
-│   ├── requirements.txt
-│   ├── .env.example
-│   └── render.yaml
-└── vercel.json
+├── vercel.json                  ← Deployment config
+└── README.md
 ```
 
 ---
 
 ## ⚡ Quick Start
 
-### 1. Backend
-
+### Option 1: Direct Browser
 ```bash
-cd backend
-
-# Create and activate virtual environment
-python -m venv venv
-# Windows:
-venv\Scripts\activate
-# Mac/Linux:
-source venv/bin/activate
-
-# Install dependencies
-python -m pip install -r requirements.txt
-
-# If you see a launcher path error on Windows, recreate the venv first:
-# rmdir /s /q venv
-# python -m venv venv
-# venv\Scripts\activate
-# python -m pip install -r requirements.txt
-
-# Configure your API key
-copy .env.example .env
-# Edit .env — add your OPENROUTER_API_KEY
-
-# Start dev server
-python app.py
-uvicorn app:app --reload --port 8000
-# → Listening on http://localhost:8000
+# Simply open the file in your browser
+frontend/index.html
 ```
 
-> **No API key?** The app runs in **demo mode** using a keyword heuristic. Add your key from [openrouter.ai/keys](https://openrouter.ai/keys) for real AI analysis.
+A modal will appear asking for your OpenRouter API key. Enter it and start analyzing!
 
-### 2. Frontend
-
-Open `frontend/index.html` directly in a browser — **no build step needed**.
-
-Or serve it locally:
+### Option 2: Local Server
 ```bash
-# Using Python:
 cd frontend
-python -m http.server 3000
-# → http://localhost:3000
+python -m http.server 8000
+# → Open http://localhost:8000
 ```
 
 ---
 
-## 🔑 Getting an OpenRouter API Key
+## 🔑 Getting a Google Gemini API Key
 
-1. Go to [openrouter.ai](https://openrouter.ai) and sign up (free)
-2. Navigate to [openrouter.ai/keys](https://openrouter.ai/keys)
-3. Create a new key and copy it
-4. Paste it into `backend/.env` as `OPENROUTER_API_KEY=sk-or-...`
+1. Go to [makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey) and sign in with your Google account
+2. Click **"Create API Key"** (it's FREE!)
+3. Copy your API key
+4. **For local development:**
+   - Edit `frontend/js/config-env.js` and replace `PASTE_YOUR_GEMINI_API_KEY_HERE` with your actual key
+   - Or enter it in the modal when the app loads
+5. **For production (Vercel):**
+   - Set the environment variable `GEMINI_API_KEY` in Vercel dashboard
 
-The free tier includes generous usage of models like `mistral-7b-instruct`.
-
----
-
-## 🚀 Deployment
-
-### Frontend → Vercel
-
-1. Push the project to GitHub
-2. Connect the repo to [Vercel](https://vercel.com)
-3. Set the root directory to `/` (vercel.json handles routing)
-4. Set `BACKEND_URL` in your frontend if needed (edit `js/api.js`)
-
-### Backend → Render
-
-1. Connect the `/backend` folder to a new Render Web Service
-2. **Build command:** `python -m pip install -r requirements.txt`
-3. **Start command:** `uvicorn app:app --host 0.0.0.0 --port $PORT`
-4. Add environment variable: `OPENROUTER_API_KEY = <your key>`
+### ✅ Free Tier Advantages
+- ✨ **Unlimited requests** (no rate limits like free models!)
+- 🚀 **Fast responses** with `gemini-2.5-flash-lite`
+- 💰 **Completely free** to use
+- 📊 Better analysis quality
 
 ---
 
-## 📡 API Reference
+## 🚀 Deploy to Vercel (1 Click!)
 
-### `POST /analyze`
+**See full instructions:** [VERCEL_DEPLOYMENT.md](VERCEL_DEPLOYMENT.md)
 
-Analyze text or a URL.
-
-**Request:**
-```json
-{ "text": "Breaking: Scientists discover cure using banana peels..." }
-```
-
-**Response:**
-```json
-{
-  "fake_or_real": "Fake",
-  "confidence": 87.5,
-  "explanation": "This article contains several sensationalist claims..."
-}
-```
-
-### `POST /analyze/upload`
-
-Upload an image (JPG/PNG/GIF/WebP) or PDF for analysis.
-
-**Form data:** `file` — multipart/form-data
-
-**Response:** Same as `/analyze`
+### Quick Steps:
+1. Push your code to GitHub
+2. Go to [vercel.com/new](https://vercel.com/new) and import your repo
+3. Set **Root Directory** to `frontend`
+4. Add **Environment Variable:** `GEMINI_API_KEY` = your Gemini key
+5. Deploy!
 
 ---
 
 ## 🛠 Tech Stack
 
-| Layer     | Technology                         |
-|-----------|------------------------------------|
-| Frontend  | HTML5 · CSS3 · Vanilla JavaScript  |
-| Backend   | Python 3.11 · FastAPI · Uvicorn    |
-| AI        | OpenRouter API (Mistral-7B)        |
-| OCR       | pytesseract + Tesseract            |
-| PDF       | pdfplumber                         |
-| Web scrape| httpx + BeautifulSoup4             |
-| Deploy FE | Vercel                             |
-| Deploy BE | Render                             |
+| Layer     | Technology                          |
+|-----------|-------------------------------------|
+| Frontend  | HTML5 · CSS3 · Vanilla JavaScript   |
+| AI Model  | OpenRouter API (Mistral-7B)         |
+| Hosting   | Vercel                              |
+| Storage   | localStorage (browser-only)         |
 
 ---
 
-## 📦 OCR Setup (Optional)
+## 📝 Features
 
-To enable image analysis, install Tesseract OCR:
+✅ **Advanced Analysis** — Classifies news as True, Misleading, or False/Fabricated  
+✅ **No Backend** — Pure frontend, runs entirely in the browser  
+✅ **No Installation** — Open `index.html` directly  
+✅ **One-Click Deploy** — Vercel integration ready  
+✅ **Chat History** — Stored locally in browser  
+✅ **API Key Modal** — Set your Gemini key on first load  
+✅ **Glassmorphism UI** — Premium, modern design  
+✅ **Consistent Verdicts** — Analysis matches classified verdict (no contradictions)  
 
-- **Windows:** [Download installer](https://github.com/UB-Mannheim/tesseract/wiki)
-- **macOS:** `brew install tesseract`
-- **Ubuntu:** `sudo apt install tesseract-ocr`
+---
 
-Then uncomment and set the path in `services/ocr_service.py` if Tesseract isn't on your PATH.
-# Ai-Fake-News-Detection-ChatBot-
+## 🔒 Security Notes
+
+- Your OpenRouter API key is stored in browser localStorage
+- For production, use Vercel environment variables (more secure)
+- Never commit `.env.local` (already in .gitignore)
+- API calls go directly from browser → OpenRouter (no data stored on servers)
+
+---
+
+## 📦 No Build Step Needed
+
+This is vanilla HTML/CSS/JS — just deploy and go!
+
+```bash
+# Development:
+python -m http.server 8000
+
+# Production:
+# → Vercel handles it automatically
+```
+
+---
+
+## 🎯 Common Tasks
+
+### Change API Provider
+Edit `frontend/js/api.js` and update:
+- `OPENROUTER_API_URL` — API endpoint
+- `MODEL` — Model name (e.g., `gpt-4-turbo`)
+
+### Add a New Feature
+All code is in `frontend/js/` — add new functions to `app.js`
+
+### Debug Locally
+Open DevTools → Network tab → check OpenRouter requests
+
+---
+
+## 📄 License
+
+MIT
