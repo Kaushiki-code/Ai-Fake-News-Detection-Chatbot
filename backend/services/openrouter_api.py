@@ -8,6 +8,7 @@ import re
 import json
 import hashlib
 import httpx
+from typing import Optional, Dict, List, Any
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -54,12 +55,12 @@ ANALYSIS_MODELS = [
 
 # ── Per-function model caches ───────────────────────────────────────
 # Each endpoint remembers its own last-working model independently.
-_cached_model: str | None      = None   # analysis
-_cached_chat_model: str | None = None   # chat
+_cached_model: Optional[str] = None   # analysis
+_cached_chat_model: Optional[str] = None   # chat
 _failed_models: set = set()
 
 # ── Response cache: stores analysis results to avoid redundant API calls ──
-_analysis_cache: dict[str, dict] = {}
+_analysis_cache: Dict[str, Dict[str, Any]] = {}
 _CACHE_MAX = 200  # Maximum cached entries (LRU-lite: evict oldest)
 
 def _cache_key(text: str, source_domain: str) -> str:
@@ -314,7 +315,7 @@ def _heuristic_fallback(text: str) -> dict:
     }
 
 
-async def chat_with_ai(message: str, history: list[dict] | None = None) -> str:
+async def chat_with_ai(message: str, history: Optional[List[Dict[str, Any]]] = None) -> str:
     """
     Conversational chatbot endpoint with multi-turn memory.
     history: list of {role: 'user'|'assistant', content: str} from previous turns.

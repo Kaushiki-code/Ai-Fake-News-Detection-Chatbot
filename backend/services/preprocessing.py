@@ -4,6 +4,7 @@ services/preprocessing.py — Text Cleaning & URL Scraping
 
 import re
 import httpx
+from typing import Tuple
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 
@@ -51,7 +52,7 @@ def is_credible_source(domain: str) -> bool:
     return domain in CREDIBLE_SOURCES
 
 
-async def fetch_url_text(url: str) -> tuple[str, str]:
+async def fetch_url_text(url: str) -> Tuple[str, str]:
     """
     Fetch and parse text content from a web URL.
     Returns (extracted_text, source_domain).
@@ -143,7 +144,7 @@ def _clean(text: str) -> str:
     return text.strip()
 
 
-async def preprocess(raw: str) -> tuple[str, str]:
+async def preprocess(raw: str) -> Tuple[str, str]:
     """
     Main entry point.
     Returns (cleaned_text, source_domain).

@@ -2,8 +2,10 @@
 routes/analyze.py — POST /analyze  +  POST /chat
 """
 
+from typing import List, Dict, Any
+
 from fastapi import APIRouter, HTTPException, Body
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from services.preprocessing import preprocess
 from services.openrouter_api import analyze_with_ai, chat_with_ai
@@ -19,16 +21,16 @@ class AnalyzeRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     message: str
-    history: list[dict] = []   # [{role: 'user'|'assistant', content: str}]
+    history: List[Dict[str, Any]] = Field(default_factory=list)
 
 
 class AnalyzeResponse(BaseModel):
-    fake_or_real:        str
-    confidence:          float
-    explanation:         str
-    key_signals:         list[str] = []
-    misinformation_type: str       = ""
-    verification_tips:   list[str] = []
+    fake_or_real: str
+    confidence: float
+    explanation: str
+    key_signals: List[str] = Field(default_factory=list)
+    misinformation_type: str = ""
+    verification_tips: List[str] = Field(default_factory=list)
 
 
 class ChatResponse(BaseModel):
@@ -65,11 +67,6 @@ async def analyze(body: AnalyzeRequest = Body(...)):
 async def chat(body: ChatRequest = Body(...)):
     """
     General-purpose AI chat endpoint — behaves like ChatGPT/Gemini.
-
-    The frontend already routes news headlines to /analyze.
-    Everything that reaches /chat is a conversational message:
-    questions, follow-ups, general knowledge, sports scores, etc.
-    Messages are passed directly to chat_with_ai() with full history.
     """
     message = body.message.strip()
     if not message:
