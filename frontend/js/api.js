@@ -13,45 +13,48 @@ const API = (() => {
   const failedModels = new Set();
 
   // System prompts
-  const SYSTEM_PROMPT = `You are TruthBot, an advanced fake news detection assistant.
+  const SYSTEM_PROMPT = `You are TruthBot, an advanced fact-checking AI assistant using HYBRID verification.
 
-CRITICAL INSTRUCTION: YOUR VERDICT AND MISINFORMATION_TYPE MUST MATCH!
-- If misinformation_type = "Fabricated Content" → verdict MUST be "False / Fabricated"
-- If misinformation_type = "Accurate Reporting" → verdict MUST be "True"
-- If misinformation_type = "Misleading Headline" or "Exaggeration" → verdict MUST be "Misleading / Partially True"
+⚡ YOU HAVE ACCESS TO REAL-TIME ARTICLES FROM GOOGLE NEWS API
+Use real articles as PRIMARY evidence. AI reasoning is SECONDARY support.
+
+CRITICAL INSTRUCTIONS:
+1. If REAL ARTICLES provided → Compare claim against them FIRST
+   - Multiple articles confirm claim → Verdict: True ✅
+   - Articles contradict claim → Verdict: False/Fabricated ❌
+   - Articles partially match → Verdict: Misleading/Partially True ⚠️
+
+2. If NO REAL ARTICLES found → 
+   - Use AI reasoning (lower confidence)
+   - Default to Misleading, NOT False (unless obviously fabricated)
+
+3. VERDICT MUST MATCH MISINFORMATION_TYPE:
+   - "Fabricated Content" → verdict: "False / Fabricated"
+   - "Accurate Reporting" → verdict: "True"
+   - "Misleading Headline" or "Exaggeration" → verdict: "Misleading / Partially True"
 
 CLASSIFICATION RULES:
-- "True" → Claim is factually accurate, has credible sources, official confirmation exists
-- "Misleading / Partially True" → Real event exists but is exaggerated/sensationalized/missing context
-- "False / Fabricated" → Claim is completely made up, NO credible sources, NO official confirmation, contradicts verified facts
+- "True" → Claim matches real articles OR is factually accurate
+- "Misleading / Partially True" → Real event exists but exaggerated/incomplete
+- "False / Fabricated" → Contradicts real articles OR completely unsupported with sources
 
-DECISION TREE:
-1. Is there ZERO official announcement or credible news coverage? → False/Fabricated ❌
-2. Is the claim realistic and verifiable? → Check for sources
-   - Has credible sources → True ✅
-   - No credible sources → False/Fabricated ❌
-3. If sources exist but claim is sensationalized → Misleading/Partially True ⚠️
+EXAMPLES:
+- Claim: "Free laptops for all students" (NO articles found)
+  → Verdict: Misleading / Partially True + Type: Unverified Claim (NOT False)
 
-EXAMPLES (Verdict MUST match misinformation_type):
-- "Government offers free laptops to all students" (no source) 
-  → verdict:"False / Fabricated" + misinformation_type:"Fabricated Content" ✓
+- Claim: "Government announces X policy" (2+ credible articles confirm)
+  → Verdict: True + Type: Accurate Reporting
 
-- "Study claims cure for cancer but no sources given"
-  → verdict:"False / Fabricated" + misinformation_type:"Fabricated Content" ✓
+- Claim: "100 people died" but articles say "10 died"
+  → Verdict: False / Fabricated + Type: False Context
 
-- "Breaking: War starts immediately" (real war but sensationalized)
-  → verdict:"Misleading / Partially True" + misinformation_type:"Sensationalism" ✓
-
-- "Official announcement: Tax rate raised by 0.5%"
-  → verdict:"True" + misinformation_type:"Accurate Reporting" ✓
-
-RESPOND WITH ONLY VALID JSON (no markdown, no comments):
+RESPOND WITH ONLY VALID JSON:
 {
   "verdict": "True" or "Misleading / Partially True" or "False / Fabricated",
   "confidence": 0-100,
-  "explanation": "1-2 sentences",
+  "explanation": "Use REAL ARTICLES as primary evidence",
   "key_signals": ["signal1", "signal2"],
-  "misinformation_type": "Exaggeration|Misleading Headline|False Context|Fabricated Content|Propaganda|Unverified Claim|Sensationalism|Accurate Reporting",
+  "misinformation_type": "Fabricated Content|Accurate Reporting|Misleading Headline|Exaggeration|Unverified Claim|...",
   "sensationalism_level": "Low|Medium|High",
   "verification_tips": ["tip1", "tip2"]
 }`;
@@ -154,17 +157,45 @@ Formatting: Use **bold**, bullet points (- item), numbered lists (1. item), and 
   }
 
   /**
-   * Analyze text / URL via Gemini
+   * Analyze text / URL via Gemini (HYBRID: Google News API + Gemini)
    * @param {string} text - The news text or URL to analyze
-   * @returns {Promise<{verdict, confidence, explanation}>}
+   * @returns {Promise<{verdict, confidence, explanation, matched_articles}>}
    */
   async function analyzeText(text) {
     try {
-      const userMessage = `Analyze this news:\n\n${text.slice(0, 6000)}`;
+      // STEP 1: Extract keywords from user input
+      console.log('📝 Step 1: Extracting keywords...');
+      const keywords = FactChecker.extractKeywords(text);
+      console.log('🔑 Keywords extracted:', keywords);
+
+      // STEP 2: Fetch real articles from News API
+      console.log('📰 Step 2: Fetching real-time articles...');
+      const articles = await FactChecker.fetchNewsArticles(keywords);
       
+      // STEP 3: Analyze articles for initial evidence
+      console.log('🔎 Step 3: Analyzing articles for evidence...');
+      const evidenceAnalysis = FactChecker.analyzeArticlesForEvidence(articles);
+      console.log('📊 Evidence analysis:', evidenceAnalysis);
+
+      // STEP 4: Build enhanced message for Gemini with articles
+      let geminiMessage = `Analyze this news:\n\n${text.slice(0, 6000)}`;
+      
+      // Include real articles in the prompt if found
+      if (articles.length > 0) {
+        geminiMessage += '\n\n=== REAL-TIME ARTICLES (from Google News) ===\n';
+        articles.forEach((article, idx) => {
+          geminiMessage += `\n${idx + 1}. "${article.title}"\n   Source: ${article.source}\n   URL: ${article.url}\n`;
+        });
+        geminiMessage += '\n=== END ARTICLES ===\n\nCompare the claim with these real articles. Use them as primary evidence.';
+      } else {
+        geminiMessage += '\n\n(No real-time articles found. Use AI reasoning based on your knowledge cutoff.)';
+      }
+
+      // STEP 5: Call Gemini with article context
+      console.log('🤖 Step 4: Getting Gemini analysis with article context...');
       const content = await callGemini(
         SYSTEM_PROMPT,
-        userMessage,
+        geminiMessage,
         0.1,  // low temperature for analysis
         512   // max tokens
       );
@@ -186,34 +217,35 @@ Formatting: Use **bold**, bullet points (- item), numbered lists (1. item), and 
           misinformation_type: 'Unverified Claim',
           sensationalism_level: 'Medium',
           verification_tips: ['Search for this story on Reuters, BBC, or AP News', 'Check official sources for verification'],
+          matched_articles: articles
         };
       }
 
       const result = JSON.parse(jsonMatch[0]);
       
+      // Add matched articles to result
+      result.matched_articles = articles;
+      
       // Debug logging
       console.log('🤖 Gemini API Response:', content);
       console.log('📋 Parsed JSON:', result);
       
-      // CRITICAL: Fix contradictions - if misinformation_type says Fabricated, verdict MUST be False/Fabricated
+      // CRITICAL: Fix contradictions
       if (result.misinformation_type) {
         const misLower = result.misinformation_type.toLowerCase();
         
-        // If it's Fabricated Content, verdict MUST say False/Fabricated
         if (misLower === 'fabricated content' || misLower === 'propaganda' || misLower === 'false context') {
           if (result.verdict && !result.verdict.toLowerCase().includes('false')) {
             console.log('⚠️ FIXING CONTRADICTION: misinformation_type=Fabricated but verdict=True → Correcting to False/Fabricated');
             result.verdict = 'False / Fabricated';
           }
         }
-        // If it's Accurate Reporting, verdict MUST say True
         else if (misLower === 'accurate reporting') {
           if (result.verdict && !result.verdict.toLowerCase().includes('true')) {
             console.log('⚠️ FIXING CONTRADICTION: misinformation_type=Accurate but verdict=False → Correcting to True');
             result.verdict = 'True';
           }
         }
-        // If it's Misleading/Exaggeration, verdict should be Misleading or False (not True)
         else if (misLower.includes('misleading') || misLower.includes('exaggeration') || misLower.includes('sensationalism')) {
           if (result.verdict && result.verdict.toLowerCase().includes('true') && !result.verdict.toLowerCase().includes('partially')) {
             console.log('⚠️ FIXING CONTRADICTION: misinformation_type=Misleading but verdict=True → Correcting to Misleading/Partially True');

@@ -159,6 +159,31 @@ const Chat = (() => {
          </div>`
       : '';
 
+    // Matched articles (HYBRID: Real-time data from Google News)
+    const articles = Array.isArray(result.matched_articles) ? result.matched_articles : [];
+    const articlesHTML = articles.length > 0
+      ? `<div class="result-articles">
+           <span class="result-section-label">📰 Real-Time Articles</span>
+           <div class="articles-badge">✓ Verified with real sources</div>
+           <ul class="articles-list">
+             ${articles.map((article, idx) => `
+               <li class="article-item">
+                 <div class="article-number">${idx + 1}</div>
+                 <div class="article-content">
+                   <a href="${escapeHTML(article.url)}" target="_blank" rel="noopener noreferrer" class="article-title">
+                     ${escapeHTML(article.title)}
+                   </a>
+                   <div class="article-meta">
+                     <span class="article-source">📍 ${escapeHTML(article.source)}</span>
+                     <span class="article-relevance">Relevance: ${article.relevanceScore}%</span>
+                   </div>
+                 </div>
+               </li>
+             `).join('')}
+           </ul>
+         </div>`
+      : '';
+
     return `
       <div class="analysis-result">
         <div class="result-row">
@@ -178,6 +203,8 @@ const Chat = (() => {
         <p class="explanation">${explanation}</p>
         ${signalsHTML}
         ${misTypeHTML}
+        ${articlesHTML}
+        ${tipsHTML}
         ${tipsHTML}
       </div>`;
   }
