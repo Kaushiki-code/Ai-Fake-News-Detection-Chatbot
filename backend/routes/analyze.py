@@ -29,7 +29,7 @@ class AnalyzeResponse(BaseModel):
     confidence: float
     explanation: str
     key_signals: List[str] = Field(default_factory=list)
-    misinformation_type: str = ""
+    misinformation_type: str = Field(default="Unverified Claim")
     verification_tips: List[str] = Field(default_factory=list)
 
 
@@ -43,15 +43,17 @@ class ChatResponse(BaseModel):
 async def analyze(body: AnalyzeRequest = Body(...)):
     """
     Explicit fake-news analysis endpoint.
-    Called by the frontend when it detects a news headline or article.
     """
     raw_text = body.text.strip()
+
     if not raw_text:
         raise HTTPException(status_code=400, detail="Text is required.")
+
     if len(raw_text) > 20_000:
         raise HTTPException(status_code=400, detail="Text too long (max 20,000 chars).")
 
     cleaned, source_domain = await preprocess(raw_text)
+
     if not cleaned:
         raise HTTPException(status_code=422, detail="Could not extract meaningful text.")
 
@@ -66,9 +68,10 @@ async def analyze(body: AnalyzeRequest = Body(...)):
 @router.post("/chat", response_model=ChatResponse)
 async def chat(body: ChatRequest = Body(...)):
     """
-    General-purpose AI chat endpoint — behaves like ChatGPT/Gemini.
+    General-purpose AI chat endpoint.
     """
     message = body.message.strip()
+
     if not message:
         raise HTTPException(status_code=400, detail="Message is required.")
 
