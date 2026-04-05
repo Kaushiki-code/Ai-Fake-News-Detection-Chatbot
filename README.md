@@ -1,53 +1,247 @@
 # TruthLens — AI Fake News Detector
 
-> A lightweight, frontend-only AI web app for detecting fake news with a glassmorphism UI.
-> Deploy directly to Vercel in seconds! 🚀
+> A hybrid AI-powered web app for detecting fake news with real-time article verification.
+> Fact-checking powered by Google Gemini + News API.
+> Deploy to Vercel with secure backend API functions! 🚀
 
 ---
 
-## 🗂 Project Structure
+## 🚀 Quick Start Guide
+
+### **1️⃣ Setup API Keys (Required)**
+
+#### Get Free API Keys:
+
+**Google Gemini API:**
+1. Go to: https://makersuite.google.com/app/apikey
+2. Click **"Create API Key"** (free tier available)
+3. Copy your key
+4. ✅ Save it
+
+**Google News API:**
+1. Go to: https://newsapi.org/register
+2. Sign up (free tier available)
+3. Copy your key
+4. ✅ Save it
+
+---
+
+### **2️⃣ Local Development (Test Locally)**
+
+#### Start the Project:
+
+```bash
+# Navigate to project directory
+cd "c:\Users\kaush\Desktop\AI PROJECT_"
+
+# Option A: Using Python (Simplest)
+python -m http.server 8000
+# → Open: http://localhost:8000
+
+# Option B: Using Vercel CLI (Includes Backend Functions)
+npm install -g vercel  # One time only
+vercel dev
+# → Open: http://localhost:3000
+```
+
+#### Configure Local Keys:
+
+Create/edit `.env.local` file:
+```
+GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
+NEWS_API_KEY=YOUR_NEWS_API_KEY_HERE
+```
+
+**Note:** `.env.local` is in `.gitignore` (won't be committed) ✅
+
+---
+
+### **3️⃣ Production Deployment (Vercel)**
+
+#### Step 1: Create Vercel Project
+
+```bash
+cd "c:\Users\kaush\Desktop\AI PROJECT_"
+vercel
+```
+
+When prompted:
+- **"Set up and deploy?"** → `Y`
+- **"Create new project?"** → `Y`
+- **"What's your project's name?"** → Enter a name (e.g., `fake-news-detector`)
+
+#### Step 2: Add Environment Variables
+
+1. Go to https://vercel.com/dashboard
+2. Select your project
+3. **Settings → Environment Variables**
+4. Add two variables:
+   ```
+   GEMINI_API_KEY = [YOUR_KEY]
+   NEWS_API_KEY = [YOUR_KEY]
+   ```
+5. Select: ☑️ Production, ☑️ Preview, ☑️ Development
+6. Click **Save**
+
+#### Step 3: Deploy
+
+```bash
+# Push to GitHub (automatic redeploy)
+git push
+
+# Or manually deploy
+vercel deploy --prod
+```
+
+#### Step 4: Test Your Deployment
+
+1. Visit your Vercel URL (shown in dashboard)
+2. Send a message in the chatbot
+3. Check DevTools (F12) → Network tab → `/api/analyze` request
+4. Should see `200 OK` ✅
+
+---
+
+## 📁 Project Structure
 
 ```
 AI PROJECT_/
-├── frontend/                    ← Complete Static App (Deploy to Vercel)
-│   ├── index.html               ← Main page
-│   ├── .env.local               ← Local API key (git-ignored)
-│   ├── .env.example             ← Template
-│   ├── css/
-│   │   ├── style.css            ← Global design system
-│   │   ├── dashboard.css        ← Dashboard styles
-│   │   └── chat.css             ← Chat + demo + history
-│   ├── js/
-│   │   ├── app.js               ← SPA navigation, toasts, ripple
-│   │   ├── api.js               ← OpenRouter API client
-│   │   ├── config.js            ← API key setup modal
-│   │   ├── chat.js              ← Chatbot logic
-│   │   ├── demo.js              ← Demo news cards
-│   │   └── history.js           ← localStorage history
-│   └── assets/
-│       ├── images/
-│       └── icons/
+├── index.html                   ← Main app
+├── css/
+│   ├── style.css                ← Global styles
+│   ├── dashboard.css            ← Dashboard UI
+│   └── chat.css                 ← Chat UI
+├── js/
+│   ├── api.js                   ← Calls /api/analyze & /api/chat
+│   ├── chat.js                  ← Chat logic
+│   ├── config.js                ← Config initialization
+│   ├── fact-checker.js          ← Keyword extraction & caching
+│   ├── app.js                   ← SPA navigation
+│   ├── demo.js                  ← Demo articles
+│   ├── history.js               ← Chat history
+│   ├── config-env.js            ← Environment loader
+│   └── env-loader.js            ← Env file loader
+├── api/                         ← Backend Functions (Vercel Serverless)
+│   ├── analyze.js               ← POST /api/analyze (fact-checking)
+│   └── chat.js                  ← POST /api/chat (conversations)
 ├── vercel.json                  ← Deployment config
+├── .env                         ← Local dev keys (with placeholders)
+├── .env.local                   ← YOUR local keys (in .gitignore)
+├── .gitignore                   ← Protects .env files ✅
+├── DEPLOYMENT_SECURE.md         ← Security guide
 └── README.md
 ```
 
 ---
 
-## ⚡ Quick Start
+## 🔑 Getting API Keys
 
-### Option 1: Direct Browser
-```bash
-# Simply open the file in your browser
-frontend/index.html
+### Google Gemini API (Required)
+1. Go to [makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey) and sign in
+2. Click **"Create API Key"** (FREE!)
+3. Copy your API key
+4. Add to `.env.local`: `GEMINI_API_KEY=AIzaSy_...`
+
+### Google News API (Optional but Recommended)
+1. Go to [newsapi.org/register](https://newsapi.org/register) and sign up (FREE)
+2. Copy your News API key
+3. Add to `.env.local`: `NEWS_API_KEY=...`
+4. If not provided: App falls back to AI-only (still works!)
+
+---
+
+## 🤖 How It Works
+
+**Hybrid Verification Pipeline:**
+
+```
+1. User submits claim
+   ↓
+2. Extract keywords (removes stopwords)
+   ↓
+3. Fetch real articles from News API
+   ↓
+4. Analyze articles for evidence
+   ↓
+5. Send to Gemini with article context
+   ↓
+6. Return verdict + sources + confidence
 ```
 
-A modal will appear asking for your OpenRouter API key. Enter it and start analyzing!
+**Benefits:**
+- ✅ AI reasoning grounded in real articles
+- ✅ Prevents hallucinations
+- ✅ Shows sources for verification
+- ✅ Hybrid confidence scoring
 
-### Option 2: Local Server
-```bash
-cd frontend
-python -m http.server 8000
-# → Open http://localhost:8000
+---
+
+## 🔒 Security
+
+- ✅ API keys **never exposed** in frontend
+- ✅ Backend functions use `process.env`
+- ✅ `.env.local` is in `.gitignore` (protected)
+- ✅ Environment variables set in Vercel dashboard (not git)
+- ✅ Safe to push to public GitHub
+
+---
+
+## 🛠 Tech Stack
+
+| Component | Technology |
+|-----------|------------|
+| Frontend | HTML5, CSS3, Vanilla JavaScript |
+| Backend | Vercel Serverless Functions (Node.js) |
+| AI Model | Google Gemini 2.5 Flash-Lite |
+| Fact-Checking | Google News API |
+| Hosting | Vercel |
+| Storage | Browser localStorage |
+
+---
+
+## 📝 Features
+
+✅ **Hybrid Fact-Checking** — Real news articles + AI reasoning  
+✅ **Real-Time Sources** — Links to matching articles  
+✅ **Backend API Functions** — Secure key handling  
+✅ **No Installation** — Works in any browser  
+✅ **One-Click Deploy** — Vercel integration  
+✅ **Chat History** — Stored locally  
+✅ **Glassmorphism UI** — Modern design  
+
+---
+
+## 🐛 Troubleshooting
+
+### "Chat failed: Unexpected token"
+**Problem:** Backend functions not running  
+**Solution:** Make sure environment variables are set in Vercel dashboard
+
+### "Gemini API error: 403"
+**Problem:** API key invalid or expired  
+**Solution:** Create new API key and update in Vercel
+
+### "Cannot connect to /api/analyze"
+**Problem:** Local dev not using backend  
+**Solution:** Use `vercel dev` instead of `python -m http.server`
+
+### "ENV variables not found"
+**Problem:** Variables not set in Vercel  
+**Solution:** Go to Settings → Environment Variables and add them again
+
+---
+
+## 📚 Deployment Guides
+
+- **Local Development:** See "Quick Start" section above
+- **Production Security:** See [DEPLOYMENT_SECURE.md](DEPLOYMENT_SECURE.md)
+- **Backend Functions:** See [DEPLOYMENT_BACKEND.md](DEPLOYMENT_BACKEND.md)
+
+---
+
+## 📄 License
+
+MIT
 ```
 
 ---
