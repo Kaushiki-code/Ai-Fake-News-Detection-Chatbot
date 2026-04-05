@@ -2,22 +2,14 @@
   "version": 2,
   "builds": [
     {
-      "src": "frontend/**",
+      "src": "**",
       "use": "@vercel/static"
     }
   ],
   "routes": [
     {
       "src": "/(.*)",
-      "dest": "/frontend/$1"
+      "dest": "/$1"
     }
-  ],
-  "env": {
-    "GEMINI_API_KEY": {
-      "description": "Google Gemini API key for AI analysis (get free key at https://makersuite.google.com/app/apikey)"
-    },
-    "NEWS_API_KEY": {
-      "description": "Google News API key for real-time fact-checking (optional, get free key at https://newsapi.org/register)"
-    }
-  }
+  ]
 }
