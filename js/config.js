@@ -25,25 +25,3 @@ const Config = (() => {
     mode: 'backend'
   };
 })();
-    window.GEMINI_API_KEY = '';
-    showApiKeyModal();
-  };
-
-  return {
-    init: checkAndSetupApiKey,
-    updateStatus: updateApiStatus,
-    clearKey: clearApiKey,
-    setKey: (key) => {
-      localStorage.setItem('GEMINI_API_KEY', key);
-      window.GEMINI_API_KEY = key;
-      updateApiStatus(true);
-    },
-  };
-})();
-
-// Initialize on page load
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', () => Config.init());
-} else {
-  Config.init();
-}
