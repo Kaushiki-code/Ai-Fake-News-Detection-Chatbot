@@ -1,10 +1,9 @@
 /**
  * chat.js — Chatbot Logic
- * Renders messages, handles file upload, calls the API.
+ * Renders messages and calls the API for text analysis.
  */
 
 const Chat = (() => {
-  let selectedFile = null;           // currently attached file
   let isProcessing = false;          // prevent double-sends
 
   // ── Conversation History (multi-turn memory) ───────────────────
@@ -25,8 +24,6 @@ const Chat = (() => {
   const inputEl     = () => document.getElementById('chatInput');
   const sendBtn     = () => document.getElementById('sendBtn');
   const typingEl    = () => document.getElementById('typingIndicator');
-  const fileInput   = () => document.getElementById('fileUpload');
-  const fileTagEl   = () => document.getElementById('fileTag');
 
   // ── Message Helpers ───────────────────────────────────────────
   function addMessage(role, html) {
@@ -256,8 +253,8 @@ const Chat = (() => {
     if (isProcessing) return;
     const text = inputEl()?.value.trim();
 
-    if (!text && !selectedFile) {
-      Toast.show('Please type something or attach a file.', 'error');
+    if (!text) {
+      Toast.show('Please enter a news article or URL.', 'error');
       return;
     }
 
@@ -265,34 +262,19 @@ const Chat = (() => {
     sendBtn()?.setAttribute('disabled', true);
 
     // Show user message
-    const displayText = selectedFile ? `📎 ${selectedFile.name}${text ? '\n\n' + text : ''}` : text;
-    addMessage('user', displayText);
+    addMessage('user', text);
 
     // Clear input
     inputEl().value = '';
     autoResize(inputEl());
-    const fileAtSend = selectedFile;
-    clearFile();
 
     // Show typing
     showTyping();
 
     try {
-      if (fileAtSend) {
-        // File upload → always analyze
-        const result = await API.analyzeFile(fileAtSend);
-        hideTyping();
-        const resultHTML = `<p>Here's my analysis:</p>${buildResultHTML(result)}`;
-        addMessage('bot', resultHTML);
-        animateProgressBars();
-        HistoryManager.add(fileAtSend.name, result);
-        // Add context to history so user can ask follow-ups
-        pushHistory('user', `[File uploaded: ${fileAtSend.name}]`);
-        pushHistory('assistant', `Analysis: ${result.fake_or_real} (${Math.round(result.confidence)}% confidence). ${result.explanation}`);
-
-      } else if (isNewsContent(text)) {
+      if (isNewsContent(text)) {
         // News headline/article → analyze for fake news
-        pushHistory('user', text);  // Add to history BEFORE the API call
+        pushHistory('user', text);
         const result = await API.analyzeText(text);
         hideTyping();
         const resultHTML = `<p>Here's my analysis:</p>${buildResultHTML(result)}`;
@@ -316,7 +298,7 @@ const Chat = (() => {
     } catch (error) {
       hideTyping();
       const errorMsg = error.message?.includes('fetch')
-        ? '⚠️ Cannot reach the backend. Make sure the server is running at <code>' + API.BASE_URL + '</code>.'
+        ? '⚠️ Cannot reach the backend. Make sure the server is running.'
         : `⚠️ Error: ${escapeHTML(error.message)}`;
       addMessage('bot', `<p>${errorMsg}</p>`);
       Toast.show('Request failed', 'error');
@@ -371,39 +353,6 @@ const Chat = (() => {
 
     // Passed all checks → treat as a news headline → /analyze
     return true;
-  }
-
-
-  // ── File Upload ───────────────────────────────────────────────
-  function handleFileSelect(file) {
-    if (!file) return;
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf'];
-    const maxSize = 10 * 1024 * 1024; // 10 MB
-
-    if (!allowedTypes.includes(file.type)) {
-      Toast.show('Only images and PDFs are supported.', 'error'); return;
-    }
-    if (file.size > maxSize) {
-      Toast.show('File must be under 10 MB.', 'error'); return;
-    }
-
-    selectedFile = file;
-    const tagEl = fileTagEl();
-    if (tagEl) {
-      tagEl.classList.remove('hidden');
-      tagEl.innerHTML = `
-        <i class="ph ph-file"></i> ${escapeHTML(file.name)}
-        <span class="remove-file" role="button" aria-label="Remove file" id="removeFileBtn">✕</span>`;
-      document.getElementById('removeFileBtn')?.addEventListener('click', clearFile);
-    }
-  }
-
-  function clearFile() {
-    selectedFile = null;
-    const tagEl = fileTagEl();
-    if (tagEl) tagEl.classList.add('hidden');
-    const fi = fileInput();
-    if (fi) fi.value = '';
   }
 
   // ── Auto-resize textarea ──────────────────────────────────────
@@ -486,7 +435,6 @@ const Chat = (() => {
   function init() {
     const inp  = inputEl();
     const sb   = sendBtn();
-    const fi   = fileInput();
 
     // Send on button click
     sb?.addEventListener('click', send);
@@ -502,9 +450,6 @@ const Chat = (() => {
     // Auto-grow textarea
     inp?.addEventListener('input', () => autoResize(inp));
 
-    // File input
-    fi?.addEventListener('change', () => handleFileSelect(fi.files?.[0]));
-
     // Clear chat — also resets conversation memory
     document.getElementById('clearChatBtn')?.addEventListener('click', () => {
       const msgs = messagesEl();
@@ -513,7 +458,6 @@ const Chat = (() => {
       const welcome = document.getElementById('welcomeMsg');
       msgs.innerHTML = '';
       if (welcome) { welcome.classList.add('fade-in'); msgs.appendChild(welcome); }
-      clearFile();
       // Reset conversation history so AI starts fresh
       conversationHistory.length = 0;
       Toast.show('Chat cleared', 'info');

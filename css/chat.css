@@ -448,10 +448,6 @@
   box-shadow: 0 0 12px var(--pink-glow);
 }
 
-.input-hints {
-  margin-top: 8px;
-  font-size: 0.72rem; color: var(--text-dim); text-align: center;
-}
 
 /* ============================================================
    DEMO NEWS

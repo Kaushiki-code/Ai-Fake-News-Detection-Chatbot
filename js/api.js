@@ -277,14 +277,6 @@ Formatting: Use **bold**, bullet points (- item), numbered lists (1. item), and 
 
   /**
    * Analyze uploaded file (image or PDF)
-   * For now, returns a message to analyze via text instead
-   * @param {File} file
-   * @returns {Promise<{fake_or_real, confidence, explanation}>}
-   */
-  async function analyzeFile(file) {
-    throw new Error('File upload is not available in this frontend-only version. Please paste text or a URL instead.');
-  }
-
   /**
    * Check if Gemini API key is configured
    */
@@ -327,5 +319,5 @@ Formatting: Use **bold**, bullet points (- item), numbered lists (1. item), and 
     }
   }
 
-  return { analyzeText, analyzeFile, chat, ping };
+  return { analyzeText, chat, ping };
 })();
