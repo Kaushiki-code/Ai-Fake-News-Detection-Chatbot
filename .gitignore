@@ -1,9 +1,13 @@
-# Environment Variables
+# ⚠️ SECURITY: Environment Variables MUST NOT be committed
 .env
 .env.local
+.env.production
+.env.*.local
+.env.*.production
 
 # Node (if ever used)
 node_modules/
+package-lock.json
 
 # OS files
 .DS_Store
@@ -13,7 +17,11 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Logs
+# Logs & Debug
 *.log
+*.log.*
 .vercel
-.env*.local
+
+# API Keys & Secrets (in case added by accident)
+**/config.local.js
+**/secrets.json
