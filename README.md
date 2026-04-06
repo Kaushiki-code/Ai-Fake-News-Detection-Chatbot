@@ -37,8 +37,6 @@ Use Vercel local runtime so both frontend + backend run together.
 
 ```bash
 # 1) Go to project root
-cd "c:\Users\ABHISHEK\Desktop\K P\Ai-Fake-News-Detection-Chatbot"
-
 # 2) Start local Vercel runtime
 npx vercel dev
 
