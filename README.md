@@ -13,12 +13,14 @@
 #### Get Free API Keys:
 
 **Google Gemini API:**
+
 1. Go to: https://makersuite.google.com/app/apikey
 2. Click **"Create API Key"** (free tier available)
 3. Copy your key
 4. ✅ Save it
 
 **Google News API:**
+
 1. Go to: https://newsapi.org/register
 2. Sign up (free tier available)
 3. Copy your key
@@ -26,31 +28,39 @@
 
 ---
 
-### **2️⃣ Local Development (Test Locally)**
+### **2️⃣ Local Development (Recommended & Correct)**
+
+This project uses backend API routes in `api/`.
+Use Vercel local runtime so both frontend + backend run together.
 
 #### Start the Project:
 
 ```bash
-# Navigate to project directory
-cd "c:\Users\kaush\Desktop\AI PROJECT_"
+# 1) Go to project root
+cd "c:\Users\ABHISHEK\Desktop\K P\Ai-Fake-News-Detection-Chatbot"
 
-# Option A: Using Python (Simplest)
-python -m http.server 8000
-# → Open: http://localhost:8000
+# 2) Start local Vercel runtime
+npx vercel dev
 
-# Option B: Using Vercel CLI (Includes Backend Functions)
-npm install -g vercel  # One time only
-vercel dev
-# → Open: http://localhost:3000
+# 3) Open URL shown in terminal (usually http://localhost:3000)
 ```
 
 #### Configure Local Keys:
 
-Create/edit `.env.local` file:
-```
+Create/edit `.env.local` in the project root:
+
+```env
 GEMINI_API_KEY=YOUR_GEMINI_API_KEY_HERE
 NEWS_API_KEY=YOUR_NEWS_API_KEY_HERE
 ```
+
+After changing `.env.local`, restart `npx vercel dev`.
+
+#### Important:
+
+- `python -m http.server` serves static files only.
+- Static server mode does not run `/api/analyze` and `/api/chat` correctly.
+- If you see key/config errors on localhost, run with `npx vercel dev` from project root.
 
 **Note:** `.env.local` is in `.gitignore` (won't be committed) ✅
 
@@ -66,6 +76,7 @@ vercel
 ```
 
 When prompted:
+
 - **"Set up and deploy?"** → `Y`
 - **"Create new project?"** → `Y`
 - **"What's your project's name?"** → Enter a name (e.g., `fake-news-detector`)
@@ -137,12 +148,14 @@ AI PROJECT_/
 ## 🔑 Getting API Keys
 
 ### Google Gemini API (Required)
+
 1. Go to [makersuite.google.com/app/apikey](https://makersuite.google.com/app/apikey) and sign in
 2. Click **"Create API Key"** (FREE!)
 3. Copy your API key
 4. Add to `.env.local`: `GEMINI_API_KEY=AIzaSy_...`
 
 ### Google News API (Optional but Recommended)
+
 1. Go to [newsapi.org/register](https://newsapi.org/register) and sign up (FREE)
 2. Copy your News API key
 3. Add to `.env.local`: `NEWS_API_KEY=...`
@@ -169,6 +182,7 @@ AI PROJECT_/
 ```
 
 **Benefits:**
+
 - ✅ AI reasoning grounded in real articles
 - ✅ Prevents hallucinations
 - ✅ Shows sources for verification
@@ -188,14 +202,14 @@ AI PROJECT_/
 
 ## 🛠 Tech Stack
 
-| Component | Technology |
-|-----------|------------|
-| Frontend | HTML5, CSS3, Vanilla JavaScript |
-| Backend | Vercel Serverless Functions (Node.js) |
-| AI Model | Google Gemini 2.5 Flash-Lite |
-| Fact-Checking | Google News API |
-| Hosting | Vercel |
-| Storage | Browser localStorage |
+| Component     | Technology                            |
+| ------------- | ------------------------------------- |
+| Frontend      | HTML5, CSS3, Vanilla JavaScript       |
+| Backend       | Vercel Serverless Functions (Node.js) |
+| AI Model      | Google Gemini 2.5 Flash-Lite          |
+| Fact-Checking | Google News API                       |
+| Hosting       | Vercel                                |
+| Storage       | Browser localStorage                  |
 
 ---
 
@@ -207,25 +221,29 @@ AI PROJECT_/
 ✅ **No Installation** — Works in any browser  
 ✅ **One-Click Deploy** — Vercel integration  
 ✅ **Chat History** — Stored locally  
-✅ **Glassmorphism UI** — Modern design  
+✅ **Glassmorphism UI** — Modern design
 
 ---
 
 ## 🐛 Troubleshooting
 
 ### "Chat failed: Unexpected token"
+
 **Problem:** Backend functions not running  
 **Solution:** Make sure environment variables are set in Vercel dashboard
 
 ### "Gemini API error: 403"
+
 **Problem:** API key invalid or expired  
 **Solution:** Create new API key and update in Vercel
 
 ### "Cannot connect to /api/analyze"
+
 **Problem:** Local dev not using backend  
 **Solution:** Use `vercel dev` instead of `python -m http.server`
 
 ### "ENV variables not found"
+
 **Problem:** Variables not set in Vercel  
 **Solution:** Go to Settings → Environment Variables and add them again
 
@@ -242,6 +260,7 @@ AI PROJECT_/
 ## 📄 License
 
 MIT
+
 ```
 
 ---
@@ -283,67 +302,69 @@ Your app now uses a intelligent two-layer verification approach:
 ### How It Works (5-Step Pipeline)
 
 ```
+
 ┌─────────────────────────────────────────────┐
 │ User Claim: "President announces new policy" │
 └──────────────┬──────────────────────────────┘
-               │
-       Step 1: Keyword Extraction
-               │ (Removes stopwords, extracts key terms)
-               ↓
-     ┌─────────────────────┐
-     │ Keywords Found:     │
-     │ - President         │
-     │ - Policy            │
-     │ - Announcement      │
-     └────────┬────────────┘
-              │
-     Step 2: Real-Time News Fetch
-              │ (Calls Google News API)
-              ↓
-     ┌──────────────────────────────┐
-     │ Articles Found (from News):   │
-     │ 1. Reuters: President...      │
-     │ 2. BBC: Policy announced...   │
-     │ 3. AP News: Statement...      │
-     └────────┬─────────────────────┘
-              │
-     Step 3: Evidence Analysis
-              │ (2+ articles = evidence found)
-              │ (0 articles = AI reasoning only)
-              ↓
-     ┌──────────────────────────────┐
-     │ Evidence Status:              │
-     │ ✓ Found 3 matching articles   │
-     │ → Confidence: 85%              │
-     └────────┬─────────────────────┘
-              │
-     Step 4: AI Reasoning (Gemini)
-              │ (With real articles as context)
-              ↓
-     ┌──────────────────────────────┐
-     │ Gemini Analysis:              │
-     │ - Verdict: REAL              │
-     │ - Type: Factual News          │
-     │ - Confidence: 95%             │
-     └────────┬─────────────────────┘
-              │
-     Step 5: Verdict Display
-              │ (Show articles + analysis)
-              ↓
-     ┌──────────────────────────────┐
-     │ ✓ REAL NEWS                  │
-     │ ✓ Verified with real sources  │
-     │ [Linked articles with sources]│
-     └──────────────────────────────┘
-```
+│
+Step 1: Keyword Extraction
+│ (Removes stopwords, extracts key terms)
+↓
+┌─────────────────────┐
+│ Keywords Found: │
+│ - President │
+│ - Policy │
+│ - Announcement │
+└────────┬────────────┘
+│
+Step 2: Real-Time News Fetch
+│ (Calls Google News API)
+↓
+┌──────────────────────────────┐
+│ Articles Found (from News): │
+│ 1. Reuters: President... │
+│ 2. BBC: Policy announced... │
+│ 3. AP News: Statement... │
+└────────┬─────────────────────┘
+│
+Step 3: Evidence Analysis
+│ (2+ articles = evidence found)
+│ (0 articles = AI reasoning only)
+↓
+┌──────────────────────────────┐
+│ Evidence Status: │
+│ ✓ Found 3 matching articles │
+│ → Confidence: 85% │
+└────────┬─────────────────────┘
+│
+Step 4: AI Reasoning (Gemini)
+│ (With real articles as context)
+↓
+┌──────────────────────────────┐
+│ Gemini Analysis: │
+│ - Verdict: REAL │
+│ - Type: Factual News │
+│ - Confidence: 95% │
+└────────┬─────────────────────┘
+│
+Step 5: Verdict Display
+│ (Show articles + analysis)
+↓
+┌──────────────────────────────┐
+│ ✓ REAL NEWS │
+│ ✓ Verified with real sources │
+│ [Linked articles with sources]│
+└──────────────────────────────┘
+
+````
 
 ### Key Benefits
 
-✅ **Grounded in Reality** — Real articles from News API prevent AI hallucinations  
-✅ **Faster Verification** — News API finds articles matching the claim  
-✅ **Higher Confidence** — Combination of real data + AI reasoning  
-✅ **Transparent Sources** — Users see the actual articles backing the verdict  
-✅ **Fallback Smart** — If no articles found, AI still analyzes independently  
+✅ **Grounded in Reality** — Real articles from News API prevent AI hallucinations
+✅ **Faster Verification** — News API finds articles matching the claim
+✅ **Higher Confidence** — Combination of real data + AI reasoning
+✅ **Transparent Sources** — Users see the actual articles backing the verdict
+✅ **Fallback Smart** — If no articles found, AI still analyzes independently
 
 ### What Happens Behind the Scenes
 
@@ -383,17 +404,17 @@ Your app now uses a intelligent two-layer verification approach:
 
 ## 📝 Features
 
-✅ **Hybrid Fact-Checking** — Real News API articles + Gemini AI reasoning  
-✅ **Real-Time Sources** — Linked articles backing every verdict  
-✅ **No Server Backend** — Pure frontend, runs entirely in the browser  
-✅ **No Installation** — Open `index.html` directly  
-✅ **One-Click Deploy** — Vercel integration ready  
-✅ **Smart Caching** — 24-hour cache prevents duplicate API calls  
-✅ **Graceful Fallback** — Works with AI-only if News API unavailable  
-✅ **Chat History** — Stored locally in browser  
-✅ **API Key Modal** — Set your keys on first load  
-✅ **Glassmorphism UI** — Premium, modern design  
-✅ **Consistent Verdicts** — Analysis matches classified verdict (no contradictions)  
+✅ **Hybrid Fact-Checking** — Real News API articles + Gemini AI reasoning
+✅ **Real-Time Sources** — Linked articles backing every verdict
+✅ **No Server Backend** — Pure frontend, runs entirely in the browser
+✅ **No Installation** — Open `index.html` directly
+✅ **One-Click Deploy** — Vercel integration ready
+✅ **Smart Caching** — 24-hour cache prevents duplicate API calls
+✅ **Graceful Fallback** — Works with AI-only if News API unavailable
+✅ **Chat History** — Stored locally in browser
+✅ **API Key Modal** — Set your keys on first load
+✅ **Glassmorphism UI** — Premium, modern design
+✅ **Consistent Verdicts** — Analysis matches classified verdict (no contradictions)
 
 ---
 
@@ -413,46 +434,50 @@ This is vanilla HTML/CSS/JS — just deploy and go!
 
 ```bash
 # Development:
-python -m http.server 8000
+npx vercel dev
 
 # Production:
 # → Vercel handles it automatically
-```
+````
 
 ---
 
 ## 🎯 Common Tasks
 
 ### Understanding the Pipeline
+
 The app uses a **5-step hybrid pipeline**:
+
 1. **api.js** — Orchestrates the entire pipeline
 2. **fact-checker.js** — Handles keyword extraction, News API calls, article caching
 3. **config-env.js** — Loads both API keys from environment
 4. **chat.js** — Displays articles with links and verdict
 
 ### Modify Fact-Checking Rules
+
 Edit `frontend/js/fact-checker.js`:
+
 - `extractKeywords()` — Change keyword extraction logic
 - `analyzeArticlesForEvidence()` — Adjust the "2+ articles = confident" rule
 - `clearExpiredCache()` — Change 24-hour cache TTL
 
 ### Add a New Feature
+
 All code is in `frontend/js/` — add functions to `app.js` or create new modules
 
 ### Debug the Pipeline
+
 Open DevTools Console → Look for pipeline logs:
+
 - `📝 Step 1: Extracting keywords...`
 - `📰 Step 2: Fetching real-time articles...`
 - `🔎 Step 3: Analyzing articles for evidence...`
 - `🎯 Verdict Decision: [final verdict]`
 
 ### Disable News API (Use AI-Only)
+
 1. Don't set `NEWS_API_KEY` in environment
 2. App automatically falls back to Gemini-only analysis
 3. No articles will be fetched, pure AI reasoning
 
 ---
-
-## 📄 License
-
-MIT

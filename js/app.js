@@ -130,10 +130,12 @@ function initQuickAnalyze() {
     try {
       const data = await API.analyzeText(text);
 
-      const isFake   = data.fake_or_real?.toLowerCase() === 'fake';
-      const label    = isFake ? 'Fake News' : 'Real News';
+      const verdict = String(data.verdict || data.fake_or_real || '').toLowerCase();
+      const isUncertain = verdict.includes('uncertain');
+      const isFake = verdict.includes('fake') || verdict.includes('false') || verdict.includes('misleading');
+      const label = isUncertain ? 'Uncertain' : (isFake ? 'Fake News' : 'Real News');
       const badgeCls = isFake ? 'badge-fake' : 'badge-real';
-      const icon     = isFake ? 'ph-warning-circle' : 'ph-check-circle';
+      const icon = isUncertain ? 'ph-question' : (isFake ? 'ph-warning-circle' : 'ph-check-circle');
       const conf     = Math.round(data.confidence ?? 0);
       const exp      = escapeHTML(data.explanation ?? '');
 

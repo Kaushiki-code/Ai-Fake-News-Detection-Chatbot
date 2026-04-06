@@ -17,8 +17,8 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Get API key from Vercel environment (hidden from frontend)
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+    // Get API key from runtime env, with local `.env.local` fallback for dev.
+    const GEMINI_API_KEY = getEnvValue('GEMINI_API_KEY');
 
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: 'Gemini API key not configured' });
@@ -71,6 +71,44 @@ Keep responses concise and helpful. Be conversational and friendly.`;
       type: error.name
     });
   }
+}
+
+/**
+ * Read env var from process.env first, then from local .env.local in dev.
+ */
+function getEnvValue(key) {
+  if (process.env[key]) {
+    return process.env[key];
+  }
+
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(process.cwd(), '.env.local');
+
+    if (!fs.existsSync(envPath)) {
+      return '';
+    }
+
+    const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) continue;
+
+      const eqIndex = line.indexOf('=');
+      if (eqIndex <= 0) continue;
+
+      const envKey = line.slice(0, eqIndex).trim();
+      if (envKey !== key) continue;
+
+      const envValue = line.slice(eqIndex + 1).trim();
+      return envValue.replace(/^['"]|['"]$/g, '');
+    }
+  } catch (error) {
+    console.warn('Could not read .env.local fallback:', error.message);
+  }
+
+  return '';
 }
 
 /**

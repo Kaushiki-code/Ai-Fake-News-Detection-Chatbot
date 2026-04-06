@@ -68,6 +68,7 @@ const Chat = (() => {
     // Determine if it's fake based on verdict or misinformation_type
     // CRITICAL: If misinformation_type says "Fabricated Content", it MUST be fake
     let isFake = false;
+    let isUncertain = false;
     let debugReason = '';
     
     // OVERRIDE: Check misinformation_type FIRST for Fabricated Content
@@ -108,6 +109,12 @@ const Chat = (() => {
           isFake = false;
           debugReason += ' → REAL (true)';
         }
+        // Explicit uncertain handling
+        else if (verdictLower.includes('uncertain') || verdictLower.includes('insufficient')) {
+          isFake = false;
+          isUncertain = true;
+          debugReason += ' → UNCERTAIN';
+        }
       } else if (result.fake_or_real) {
         // Legacy format fallback
         const legacyLower = result.fake_or_real?.toLowerCase();
@@ -117,11 +124,11 @@ const Chat = (() => {
       }
     }
     
-    console.log('🎯 Verdict Decision:', debugReason, '→', isFake ? '🚨 FAKE' : '✅ REAL');
+    console.log('🎯 Verdict Decision:', debugReason, '→', isUncertain ? '❓ UNCERTAIN' : (isFake ? '🚨 FAKE' : '✅ REAL'));
     
-    const label      = isFake ? 'Fake News' : 'Real News';
+    const label      = isUncertain ? 'Uncertain' : (isFake ? 'Fake News' : 'Real News');
     const badgeCls   = isFake ? 'badge-fake' : 'badge-real';
-    const icon       = isFake ? 'ph-warning-circle' : 'ph-check-circle';
+    const icon       = isUncertain ? 'ph-question' : (isFake ? 'ph-warning-circle' : 'ph-check-circle');
     const conf       = Math.round(result.confidence ?? 0);
     const explanation = escapeHTML(result.explanation ?? 'No explanation available.');
 

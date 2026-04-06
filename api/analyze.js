@@ -17,9 +17,9 @@ module.exports = async function handler(req, res) {
       return res.status(400).json({ error: 'Text is required' });
     }
 
-    // Get API key from Vercel environment (hidden from frontend)
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    const NEWS_API_KEY = process.env.NEWS_API_KEY;
+    // Get API keys from runtime env, with local `.env.local` fallback for dev.
+    const GEMINI_API_KEY = getEnvValue('GEMINI_API_KEY');
+    const NEWS_API_KEY = getEnvValue('NEWS_API_KEY');
 
     if (!GEMINI_API_KEY) {
       return res.status(500).json({ error: 'Gemini API key not configured' });
@@ -55,36 +55,44 @@ module.exports = async function handler(req, res) {
     // ── Step 4: Call Gemini API ──
     console.log('🤖 Step 3: Calling Gemini API...');
     
-    const SYSTEM_PROMPT = `You are TruthBot, an advanced fact-checking AI assistant using HYBRID verification.
+     const SYSTEM_PROMPT = `You are an advanced AI fact-checking assistant.
 
-⚡ YOU HAVE ACCESS TO REAL-TIME ARTICLES FROM GOOGLE NEWS API
-Use real articles as PRIMARY evidence. AI reasoning is SECONDARY support.
+  Your task is to determine whether a given news claim is:
+  1. TRUE
+  2. FAKE
+  3. UNCERTAIN (Insufficient Evidence)
 
-CRITICAL INSTRUCTIONS:
-1. If REAL ARTICLES provided → Compare claim against them FIRST
-   - Multiple articles confirm claim → Verdict: True ✅
-   - Articles contradict claim → Verdict: False/Fabricated ❌
-   - Articles partially match → Verdict: Misleading/Partially True ⚠️
+  IMPORTANT RULES:
+  - Do NOT assume a claim is false just because it is not found in the provided articles.
+  - Absence of evidence is NOT evidence of falsehood.
+  - Use both: (a) your general knowledge and (b) the provided real-time articles.
 
-2. If NO REAL ARTICLES found → 
-   - Use AI reasoning (lower confidence)
-   - Default to Misleading, NOT False (unless obviously fabricated)
+  CLASSIFICATION LOGIC:
+  1) TRUE
+  - The claim is supported by known facts OR confirmed by reliable sources.
+  - If articles do not mention it, but it is widely known and verified, mark TRUE.
 
-3. VERDICT MUST MATCH MISINFORMATION_TYPE:
-   - "Fabricated Content" → verdict: "False / Fabricated"
-   - "Accurate Reporting" → verdict: "True"
-   - "Misleading Headline" or "Exaggeration" → verdict: "Misleading / Partially True"
+  2) FAKE
+  - The claim is clearly false, misleading, or contradicts known facts.
+  - Reliable sources directly refute it.
 
-RESPOND WITH ONLY VALID JSON:
-{
-  "verdict": "True" or "Misleading / Partially True" or "False / Fabricated",
-  "confidence": 0-100,
-  "explanation": "Use REAL ARTICLES as primary evidence",
-  "key_signals": ["signal1", "signal2"],
-  "misinformation_type": "Fabricated Content|Accurate Reporting|Misleading Headline|Exaggeration|Unverified Claim|...",
-  "sensationalism_level": "Low|Medium|High",
-  "verification_tips": ["tip1", "tip2"]
-}`;
+  3) UNCERTAIN
+  - The claim is not found in articles AND confidence from your knowledge is low.
+  - Information is insufficient, unrelated, or inconclusive.
+  - If sources are unrelated, prefer UNCERTAIN instead of FAKE.
+
+  CONFIDENCE RULE:
+  - Never output 100 unless absolutely certain.
+
+  Respond with ONLY valid JSON in this exact shape:
+  {
+    "verdict": "TRUE" | "FAKE" | "UNCERTAIN",
+    "confidence": 0-100,
+    "explanation": "Clear reasoning combining articles + knowledge",
+    "key_signals": ["signal 1", "signal 2"],
+    "category": "Real News" | "Fake News" | "Misleading" | "Insufficient Evidence",
+    "verification_tips": ["tip 1", "tip 2"]
+  }`;
 
     const geminiResponse = await callGemini(
       SYSTEM_PROMPT,
@@ -103,7 +111,7 @@ RESPOND WITH ONLY VALID JSON:
       });
     }
 
-    const result = JSON.parse(jsonMatch[0]);
+    const result = normalizeAnalysisResult(JSON.parse(jsonMatch[0]), articles.length);
     result.matched_articles = articles;
 
     return res.status(200).json(result);
@@ -115,6 +123,97 @@ RESPOND WITH ONLY VALID JSON:
       type: error.name
     });
   }
+}
+
+/**
+ * Normalize model output into a stable shape for the frontend.
+ */
+function normalizeAnalysisResult(raw, articleCount) {
+  const allowedVerdicts = new Set(['TRUE', 'FAKE', 'UNCERTAIN']);
+  const verdict = String(raw?.verdict || '').trim().toUpperCase();
+
+  let finalVerdict = allowedVerdicts.has(verdict) ? verdict : 'UNCERTAIN';
+
+  if (!allowedVerdicts.has(verdict) && raw?.category) {
+    const category = String(raw.category).toLowerCase();
+    if (category.includes('fake') || category.includes('misleading')) finalVerdict = 'FAKE';
+    if (category.includes('real')) finalVerdict = 'TRUE';
+    if (category.includes('insufficient')) finalVerdict = 'UNCERTAIN';
+  }
+
+  const confidenceNum = Number(raw?.confidence);
+  const confidence = Number.isFinite(confidenceNum)
+    ? Math.max(0, Math.min(100, Math.round(confidenceNum)))
+    : (finalVerdict === 'UNCERTAIN' ? 45 : 70);
+
+  const explanation = String(raw?.explanation || '').trim() || 'Insufficient details returned by the model.';
+
+  const keySignals = Array.isArray(raw?.key_signals)
+    ? raw.key_signals.map(v => String(v).trim()).filter(Boolean).slice(0, 6)
+    : [];
+
+  const verificationTips = Array.isArray(raw?.verification_tips)
+    ? raw.verification_tips.map(v => String(v).trim()).filter(Boolean).slice(0, 6)
+    : [];
+
+  let category = String(raw?.category || '').trim();
+  if (!category) {
+    if (finalVerdict === 'TRUE') category = 'Real News';
+    else if (finalVerdict === 'FAKE') category = articleCount > 0 ? 'Fake News' : 'Misleading';
+    else category = 'Insufficient Evidence';
+  }
+
+  // Keep this field for existing UI components that still render it.
+  const misinformationType = category;
+
+  return {
+    verdict: finalVerdict,
+    confidence,
+    explanation,
+    key_signals: keySignals,
+    category,
+    misinformation_type: misinformationType,
+    verification_tips: verificationTips
+  };
+}
+
+/**
+ * Read env var from process.env first, then from local .env.local in dev.
+ * This helps when local serverless runtime does not inject env vars reliably.
+ */
+function getEnvValue(key) {
+  if (process.env[key]) {
+    return process.env[key];
+  }
+
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const envPath = path.join(process.cwd(), '.env.local');
+
+    if (!fs.existsSync(envPath)) {
+      return '';
+    }
+
+    const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+    for (const rawLine of lines) {
+      const line = rawLine.trim();
+      if (!line || line.startsWith('#')) continue;
+
+      const eqIndex = line.indexOf('=');
+      if (eqIndex <= 0) continue;
+
+      const envKey = line.slice(0, eqIndex).trim();
+      if (envKey !== key) continue;
+
+      const envValue = line.slice(eqIndex + 1).trim();
+      return envValue.replace(/^['"]|['"]$/g, '');
+    }
+  } catch (error) {
+    console.warn('Could not read .env.local fallback:', error.message);
+  }
+
+  return '';
 }
 
 /**

@@ -7,6 +7,31 @@
 const API = (() => {
   // ── Configuration ──────────────────────────────────────────────
   const API_BASE = '/api'; // Vercel serverless functions
+
+  function toUserFriendlyError(status, rawMessage) {
+    const message = String(rawMessage || '').trim();
+    const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+
+    if (message.includes('Gemini API key not configured')) {
+      return isLocal
+        ? 'Backend is running, but GEMINI_API_KEY is missing. Add it to .env.local and restart `vercel dev`.'
+        : 'Gemini API key is not configured on backend.';
+    }
+
+    if (message.includes('Gemini API error: 403')) {
+      return 'Gemini key is invalid/revoked or API access is blocked. Generate a new key and update .env.local.';
+    }
+
+    if (status === 404 && isLocal) {
+      return 'Backend API routes are not running. Start with `vercel dev` (not only a static server).';
+    }
+
+    if (status >= 500 && isLocal) {
+      return `${message || 'Backend error'}. If you are on localhost, run with \`vercel dev\` and restart after env changes.`;
+    }
+
+    return message || `HTTP ${status}`;
+  }
   
   /**
    * Call backend Vercel function
@@ -22,8 +47,20 @@ const API = (() => {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || `HTTP ${response.status}`);
+        let errorMessage = '';
+        const contentType = response.headers.get('content-type') || '';
+
+        if (contentType.includes('application/json')) {
+          const error = await response.json();
+          errorMessage = error?.error || '';
+        } else {
+          const text = await response.text();
+          errorMessage = text && text.startsWith('<!DOCTYPE')
+            ? 'API route returned HTML instead of JSON'
+            : text;
+        }
+
+        throw new Error(toUserFriendlyError(response.status, errorMessage));
       }
 
       return await response.json();
