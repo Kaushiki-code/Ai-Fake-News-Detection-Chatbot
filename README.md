@@ -38,7 +38,7 @@ Use Vercel local runtime so both frontend + backend run together.
 ```bash
 # 1) Go to project root
 # 2) Start local Vercel runtime
-npx vercel dev
+npx vercel dev # run this on the terminal 
 
 # 3) Open URL shown in terminal (usually http://localhost:3000)
 ```
