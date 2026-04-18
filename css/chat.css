@@ -606,3 +606,86 @@
 }
 .empty-state i { font-size: 52px; color: var(--text-dim); }
 .empty-state p { font-size: 0.9rem; }
+
+/* ============================================================
+   LIGHT THEME OVERRIDES — CHAT
+   ============================================================ */
+:root[data-theme="light"] .chat-container {
+  background: rgba(248, 249, 251, 0.8);
+  border-color: rgba(75, 93, 255, 0.12);
+}
+
+:root[data-theme="light"] .chat-header {
+  border-bottom-color: rgba(75, 93, 255, 0.12);
+}
+
+:root[data-theme="light"] .bot-avatar {
+  background: linear-gradient(135deg, #5B7FFF, #FF5F8F);
+  box-shadow: 0 0 14px rgba(91, 127, 255, 0.2);
+}
+
+:root[data-theme="light"] .bot-avatar-sm {
+  background: linear-gradient(135deg, #F8F9FB, #EEF2FF);
+  border-color: rgba(75, 93, 255, 0.12);
+  color: #5B7FFF;
+}
+
+:root[data-theme="light"] .bot-bubble {
+  background: rgba(248, 249, 251, 0.8);
+  border-color: rgba(91, 127, 255, 0.2);
+  color: #1A1D2E;
+  box-shadow: 0 0 12px rgba(91, 127, 255, 0.08);
+}
+
+:root[data-theme="light"] .user-bubble {
+  background: linear-gradient(135deg, #5B7FFF, #6366f1);
+  box-shadow: 0 4px 20px rgba(91, 127, 255, 0.2);
+}
+
+:root[data-theme="light"] .analysis-result {
+  background: rgba(75, 93, 255, 0.04);
+  border-color: rgba(75, 93, 255, 0.12);
+}
+
+:root[data-theme="light"] .chat-input {
+  background: rgba(248, 249, 251, 0.6);
+  border-color: rgba(75, 93, 255, 0.12);
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .chat-input::placeholder {
+  color: rgba(26, 29, 46, 0.55);
+}
+
+:root[data-theme="light"] .chat-input:focus {
+  border-color: #5B7FFF;
+  box-shadow: 0 0 0 2px rgba(91, 127, 255, 0.15);
+  background: rgba(75, 93, 255, 0.04);
+}
+
+:root[data-theme="light"] .history-item {
+  background: linear-gradient(135deg, rgba(248, 249, 251, 0.8), rgba(238, 242, 255, 0.6));
+  border-color: rgba(75, 93, 255, 0.12);
+}
+
+:root[data-theme="light"] .history-item:hover {
+  border-color: rgba(91, 127, 255, 0.25);
+  box-shadow: 0 4px 16px rgba(75, 93, 255, 0.08);
+}
+
+:root[data-theme="light"] .filter-btn.active {
+  background: rgba(91, 127, 255, 0.15);
+  border-color: #5B7FFF;
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .dot.real {
+  background: #5B7FFF;
+  box-shadow: 0 0 6px rgba(91, 127, 255, 0.25);
+}
+
+:root[data-theme="light"] .dot.fake {
+  background: #FF5F8F;
+  box-shadow: 0 0 6px rgba(255, 95, 143, 0.25);
+}
+

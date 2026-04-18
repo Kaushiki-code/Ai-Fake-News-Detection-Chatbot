@@ -39,6 +39,13 @@ const HistoryManager = (() => {
 
     // Update dashboard counters
     updateStats();
+    
+    // Track metrics and activity (if DashboardMetrics is loaded)
+    if (typeof DashboardMetrics !== 'undefined') {
+      DashboardMetrics.trackMetric(result);
+      DashboardMetrics.addActivityEntry(text, result);
+    }
+    
     // Re-render if history section is visible
     render(currentFilter);
   }
@@ -181,5 +188,5 @@ const HistoryManager = (() => {
     });
   }
 
-  return { init, add, clear, getStats, render };
+  return { init, add, clear, getStats, render, load };
 })();

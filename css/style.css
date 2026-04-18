@@ -3,7 +3,7 @@
    TruthLens · AI Fake News Detector
    ============================================================ */
 
-/* ── CSS Variables ── */
+/* ── CSS Variables — Dark Theme (Default) ── */
 :root {
   --primary:       #4B5DFF;
   --primary-glow:  rgba(75, 93, 255, 0.35);
@@ -31,6 +31,26 @@
   --transition:    0.28s cubic-bezier(0.4, 0, 0.2, 1);
   --shadow-card:   0 8px 32px rgba(0,0,0,0.4);
   --shadow-glow:   0 0 24px var(--primary-glow);
+}
+
+/* ── CSS Variables — Light Theme ── */
+:root[data-theme="light"] {
+  --primary:       #5B7FFF;
+  --primary-glow:  rgba(91, 127, 255, 0.15);
+  --pink:          #FF5F8F;
+  --pink-glow:     rgba(255, 95, 143, 0.12);
+  --green:         #10B981;
+  --green-glow:    rgba(16, 185, 129, 0.12);
+  --bg:            #F8F9FB;
+  --bg2:           #F0F2F5;
+  --surface:       rgba(75, 93, 255, 0.04);
+  --surface2:      rgba(75, 93, 255, 0.08);
+  --glass:         rgba(255, 255, 255, 0.85);
+  --border:        rgba(75, 93, 255, 0.12);
+  --border-glow:   rgba(91, 127, 255, 0.30);
+  --text:          #0F1117;
+  --text-muted:    rgba(26, 29, 46, 0.78);
+  --text-dim:      rgba(26, 29, 46, 0.58);
 }
 
 /* ── Reset ── */
@@ -76,6 +96,19 @@ ul { list-style: none; }
   top: 40%; right: -15%;
   animation-delay: -6s;
 }
+
+:root[data-theme="light"] .orb {
+  opacity: 0.08;
+}
+
+:root[data-theme="light"] .orb-1 {
+  background: radial-gradient(circle, #5B7FFF, transparent);
+}
+
+:root[data-theme="light"] .orb-2 {
+  background: radial-gradient(circle, #FF5F8F, transparent);
+}
+
 @keyframes orbFloat {
   0%,100% { transform: translate(0, 0) scale(1); }
   33%      { transform: translate(30px, -40px) scale(1.05); }
@@ -110,6 +143,11 @@ ul { list-style: none; }
   transition: width var(--transition);
   overflow: hidden;
 }
+
+:root[data-theme="light"] .sidebar {
+  background: linear-gradient(180deg, #FFFFFF 0%, #F8F9FB 100%);
+}
+
 .sidebar.collapsed { width: var(--sidebar-collapsed); }
 
 /* Logo */
@@ -449,6 +487,96 @@ ul { list-style: none; }
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(8px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ============================================================
+   LIGHT THEME OVERRIDES
+   ============================================================ */
+:root[data-theme="light"] {
+  --shadow-card:   0 4px 16px rgba(75, 93, 255, 0.08);
+  --shadow-glow:   0 0 16px rgba(91, 127, 255, 0.12);
+}
+
+:root[data-theme="light"] body {
+  background: var(--bg);
+}
+
+:root[data-theme="light"] .page-title,
+:root[data-theme="light"] .section-heading,
+:root[data-theme="light"] .stat-value {
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .logo-text {
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .stat-card::before {
+  background: linear-gradient(135deg, rgba(75, 93, 255, 0.06), transparent);
+}
+
+:root[data-theme="light"] .search-pill {
+  background: rgba(75, 93, 255, 0.06);
+  border-color: rgba(75, 93, 255, 0.14);
+}
+
+:root[data-theme="light"] .search-pill:hover {
+  border-color: rgba(91, 127, 255, 0.3);
+}
+
+:root[data-theme="light"] .nav-item.active {
+  background: rgba(91, 127, 255, 0.12);
+  border-left-color: #5B7FFF;
+}
+
+:root[data-theme="light"] .nav-item.active i {
+  color: #5B7FFF;
+}
+
+:root[data-theme="light"] .nav-item.active::after {
+  background: #5B7FFF;
+  box-shadow: 0 0 12px rgba(91, 127, 255, 0.25);
+}
+
+:root[data-theme="light"] .btn-primary {
+  background: linear-gradient(135deg, #5B7FFF, #7C6CFF);
+  box-shadow: 0 4px 16px rgba(91, 127, 255, 0.2);
+}
+
+:root[data-theme="light"] .btn-primary:hover {
+  box-shadow: 0 8px 24px rgba(91, 127, 255, 0.28);
+}
+
+:root[data-theme="light"] .badge-real {
+  background: rgba(91, 127, 255, 0.12);
+  border-color: rgba(91, 127, 255, 0.3);
+  color: #5B7FFF;
+  box-shadow: 0 0 12px rgba(91, 127, 255, 0.15);
+}
+
+:root[data-theme="light"] .badge-fake {
+  background: rgba(255, 95, 143, 0.12);
+  border-color: rgba(255, 95, 143, 0.3);
+  color: #FF5F8F;
+  box-shadow: 0 0 12px rgba(255, 95, 143, 0.15);
+}
+
+:root[data-theme="light"] .progress-fill {
+  background: linear-gradient(90deg, #5B7FFF, #FF5F8F);
+  box-shadow: 0 0 8px rgba(91, 127, 255, 0.2);
+}
+
+:root[data-theme="light"] .toast {
+  background: rgba(248, 249, 251, 0.95);
+  border-color: rgba(75, 93, 255, 0.15);
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .skeleton {
+  background: linear-gradient(90deg,
+    rgba(75, 93, 255, 0.06) 25%,
+    rgba(75, 93, 255, 0.12) 50%,
+    rgba(75, 93, 255, 0.06) 75%);
 }
 
 /* Responsive */

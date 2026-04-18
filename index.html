@@ -131,6 +131,9 @@
               <span class="stat-label">Total Checks</span>
               <span class="stat-value" data-target="0" id="counterTotal">0</span>
             </div>
+            <div class="stat-trend" id="trendTotal">
+              <i class="ph ph-arrow-up"></i> <span>0%</span>
+            </div>
             <div class="stat-sparkline">
               <svg viewBox="0 0 80 30" class="sparkline" aria-hidden="true">
                 <polyline points="0,25 15,18 30,22 45,10 60,15 80,5" fill="none" stroke="url(#indGrad)" stroke-width="2"/>
@@ -164,6 +167,60 @@
               <span class="stat-value" data-target="0" id="counterReal">0</span>
             </div>
             <div class="stat-badge success">✓ Trusted</div>
+          </div>
+
+          <div class="stat-card glass" id="statAccuracy">
+            <div class="stat-icon purple">
+              <i class="ph-fill ph-target"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Accuracy Rate</span>
+              <span class="stat-value" data-target="0" id="counterAccuracy">—</span>
+            </div>
+            <div class="stat-badge info">Average</div>
+          </div>
+        </div>
+
+        <!-- Additional Metrics Row -->
+        <div class="metrics-row">
+          <div class="metric-card glass">
+            <div class="metric-icon">
+              <i class="ph-fill ph-lightning-charge"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Avg Confidence</span>
+              <span class="metric-value" id="avgConfidence">—</span>
+            </div>
+          </div>
+
+          <div class="metric-card glass">
+            <div class="metric-icon">
+              <i class="ph-fill ph-hourglass"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Avg Time</span>
+              <span class="metric-value" id="avgTime">—</span>
+            </div>
+          </div>
+
+          <div class="metric-card glass">
+            <div class="metric-icon">
+              <i class="ph-fill ph-fire"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Hottest Category</span>
+              <span class="metric-value" id="hottestCategory">—</span>
+            </div>
+          </div>
+
+          <div class="metric-card glass">
+            <div class="metric-icon">
+              <i class="ph-fill ph-shield-check"></i>
+            </div>
+            <div class="metric-info">
+              <span class="metric-label">Trust Score</span>
+              <span class="metric-value" id="trustScore">—</span>
+            </div>
           </div>
         </div>
 
@@ -206,6 +263,75 @@
             <div class="donut-center">
               <span class="donut-pct" id="donutPct">—</span>
               <span class="donut-label">Real Rate</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- 2-Column Grid: Category Breakdown & Confidence Distribution -->
+        <div class="insights-grid">
+          <!-- Category Breakdown -->
+          <div class="chart-card glass">
+            <div class="chart-header">
+              <h3>Misinformation Types</h3>
+              <span class="chip">Breakdown</span>
+            </div>
+            <div class="category-breakdown" id="categoryBreakdown">
+              <div class="empty-breakdown">
+                <i class="ph ph-chart-pie"></i>
+                <p>No data yet</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Confidence Distribution -->
+          <div class="chart-card glass">
+            <div class="chart-header">
+              <h3>Confidence Distribution</h3>
+              <span class="chip">All checks</span>
+            </div>
+            <div class="confidence-bars" id="confidenceBars">
+              <div class="confidence-bar-item">
+                <div class="bar-label">90-100%</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="bar-count">0</div>
+              </div>
+              <div class="confidence-bar-item">
+                <div class="bar-label">70-89%</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="bar-count">0</div>
+              </div>
+              <div class="confidence-bar-item">
+                <div class="bar-label">50-69%</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="bar-count">0</div>
+              </div>
+              <div class="confidence-bar-item">
+                <div class="bar-label">0-49%</div>
+                <div class="bar-track">
+                  <div class="bar-fill" style="width: 0%"></div>
+                </div>
+                <div class="bar-count">0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Checks Activity -->
+        <div class="recent-checks glass">
+          <div class="chart-header">
+            <h3>📋 Recent Checks</h3>
+            <span class="chip">Live feed</span>
+          </div>
+          <div class="activity-list" id="activityList">
+            <div class="empty-activity">
+              <i class="ph ph-file-dashed"></i>
+              <p>No checks yet. Start analyzing!</p>
             </div>
           </div>
         </div>
@@ -339,12 +465,14 @@
   <div class="toast-container" id="toastContainer" aria-live="assertive"></div>
 
   <!-- JS Modules -->
+  <script src="js/theme-switcher.js"></script>
   <script src="js/env-loader.js"></script>
   <script src="js/config-env.js"></script>
   <script src="js/config.js"></script>
   <script src="js/fact-checker.js"></script>
   <script src="js/api.js"></script>
   <script src="js/history.js"></script>
+  <script src="js/dashboard-metrics.js"></script>
   <script src="js/chat.js"></script>
   <script src="js/demo.js"></script>
   <script src="js/app.js"></script>
