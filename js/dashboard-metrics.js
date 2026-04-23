@@ -77,16 +77,19 @@ const DashboardMetrics = (() => {
 
   // ── Calculate Stats ──────────────────────────────────────
   function getMetrics() {
-    const history = HistoryManager ? HistoryManager.getStats?.() : { total: 0, fake: 0, real: 0 };
+    const history = HistoryManager ? HistoryManager.getStats?.() : { total: 0, fake: 0, real: 0, uncertain: 0 };
     const metrics = loadMetrics();
     const activity = loadActivity();
 
     const total = history.total || 0;
     const fakeCount = history.fake || 0;
     const realCount = history.real || 0;
+    const uncertainCount = history.uncertain || 0;
 
-    // Calculate accuracy rate (% of real news correctly identified)
-    const accuracyRate = total === 0 ? 0 : Math.round((realCount / total) * 100);
+    // Calculate accuracy rate: (real news / all definite results) * 100
+    // Exclude uncertain from this calculation
+    const definiteCount = fakeCount + realCount;
+    const accuracyRate = definiteCount === 0 ? 0 : Math.round((realCount / definiteCount) * 100);
 
     // Calculate average confidence
     let avgConfidence = 0;

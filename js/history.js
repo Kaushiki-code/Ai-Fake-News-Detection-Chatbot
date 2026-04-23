@@ -10,7 +10,19 @@ const HistoryManager = (() => {
   // ── Helpers ──────────────────────────────────────────────────
   function load() {
     try {
-      return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      const items = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+      // Migrate old data structure if needed
+      return items.map(item => {
+        if (!item.label && item.verdict) {
+          // Fix old items that have verdict but no label
+          const verdict = String(item.verdict || '').toUpperCase().trim();
+          let label = 'uncertain';
+          if (verdict === 'TRUE') label = 'real';
+          else if (verdict === 'FAKE') label = 'fake';
+          return { ...item, label };
+        }
+        return item;
+      });
     } catch { return []; }
   }
 
@@ -71,19 +83,21 @@ const HistoryManager = (() => {
     const total = items.length;
     const fake  = items.filter(i => i.label === 'fake').length;
     const real  = items.filter(i => i.label === 'real').length;
-    return { total, fake, real };
+    const uncertain = items.filter(i => i.label === 'uncertain').length;
+    return { total, fake, real, uncertain };
   }
 
   function updateStats() {
-    const { total, fake, real } = getStats();
+    const { total, fake, real, uncertain } = getStats();
 
     // Animate counter from current to new value
     animateCounter('counterTotal', total);
     animateCounter('counterFake', fake);
     animateCounter('counterReal', real);
 
-    // Update donut chart
-    updateDonut(total === 0 ? 0 : Math.round((real / total) * 100));
+    // Update donut chart - only count real vs (fake + uncertain)
+    const definiteCount = fake + real; // Don't include uncertain in donut calc
+    updateDonut(definiteCount === 0 ? 0 : Math.round((real / definiteCount) * 100));
   }
 
   function animateCounter(id, target) {
