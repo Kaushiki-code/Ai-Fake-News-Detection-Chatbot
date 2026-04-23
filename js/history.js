@@ -21,16 +21,24 @@ const HistoryManager = (() => {
   /**
    * Add a new result entry to history.
    * @param {string} text
-   * @param {{fake_or_real, confidence, explanation}} result
+   * @param {{verdict, confidence, explanation}} result
    */
   function add(text, result) {
     const items = load();
+    
+    // Normalize verdict to standard label
+    const verdict = String(result.verdict || '').toUpperCase().trim();
+    let label = 'uncertain';
+    if (verdict === 'TRUE') label = 'real';
+    else if (verdict === 'FAKE') label = 'fake';
+    
     const entry = {
       id: Date.now(),
       text: text.slice(0, 200),           // store preview
-      label: result.fake_or_real,
-      confidence: result.confidence,
-      explanation: result.explanation,
+      label: label,
+      verdict: verdict,
+      confidence: result.confidence || 0,
+      explanation: result.explanation || '',
       timestamp: new Date().toISOString(),
     };
     items.unshift(entry);
@@ -61,8 +69,8 @@ const HistoryManager = (() => {
   function getStats() {
     const items = load();
     const total = items.length;
-    const fake  = items.filter(i => i.label?.toLowerCase() === 'fake').length;
-    const real  = items.filter(i => i.label?.toLowerCase() === 'real').length;
+    const fake  = items.filter(i => i.label === 'fake').length;
+    const real  = items.filter(i => i.label === 'real').length;
     return { total, fake, real };
   }
 
@@ -100,7 +108,8 @@ const HistoryManager = (() => {
     const pct = document.getElementById('donutPct');
     if (!arc || !pct) return;
 
-    const circumference = 2 * Math.PI * 48; // ≈ 301.6
+    // SVG circle radius is 48, so circumference = 2 * π * 48 ≈ 301.59
+    const circumference = 2 * Math.PI * 48;
     const filled = (realPct / 100) * circumference;
     arc.style.strokeDasharray = `${filled} ${circumference - filled}`;
     pct.textContent = realPct + '%';

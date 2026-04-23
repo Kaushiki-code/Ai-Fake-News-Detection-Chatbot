@@ -364,6 +364,11 @@
 }
 .donut-label { font-size: 0.72rem; color: var(--text-muted); }
 
+/* Donut background circle */
+.donut circle:first-of-type {
+  stroke: rgba(255, 255, 255, 0.08);
+}
+
 /* Donut arc animation */
 .donut #donutArc {
   stroke-dasharray: 0 302;
@@ -450,10 +455,19 @@
   box-shadow: 0 4px 16px rgba(75, 93, 255, 0.08);
 }
 
+:root[data-theme="light"] .metric-label {
+  color: #3D4556 !important;
+}
+
 :root[data-theme="light"] .metric-value {
-  background: linear-gradient(90deg, #1A1D2E 40%, #5B7FFF);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .stat-label {
+  color: #3D4556 !important;
 }
 
 /* Light theme for category items */

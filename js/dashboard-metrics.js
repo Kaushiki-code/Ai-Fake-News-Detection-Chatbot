@@ -159,6 +159,9 @@ const DashboardMetrics = (() => {
     // Update confidence distribution
     updateConfidenceDistribution();
 
+    // Update donut chart
+    updateDonutChart(stats.accuracyRate);
+
     // Update trends
     updateTrends();
   }
@@ -166,6 +169,19 @@ const DashboardMetrics = (() => {
   function updateMetricValue(id, value) {
     const el = document.getElementById(id);
     if (el) el.textContent = value;
+  }
+
+  // ── Donut Chart Update ──────────────────────────────────────
+  function updateDonutChart(realPct) {
+    const arc = document.getElementById('donutArc');
+    const pct = document.getElementById('donutPct');
+    if (!arc || !pct) return;
+
+    // SVG circle radius is 48, so circumference = 2 * π * 48 ≈ 301.59
+    const circumference = 2 * Math.PI * 48;
+    const filled = (realPct / 100) * circumference;
+    arc.style.strokeDasharray = `${filled} ${circumference - filled}`;
+    pct.textContent = realPct + '%';
   }
 
   // ── Category Breakdown ──────────────────────────────────────

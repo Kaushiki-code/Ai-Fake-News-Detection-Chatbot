@@ -3,6 +3,74 @@
    ============================================================ */
 
 /* ============================================================
+   LIGHT MODE OVERRIDES (Top of file for priority)
+   ============================================================ */
+:root[data-theme="light"] .chat-container {
+  background: rgba(248, 249, 251, 0.8);
+}
+
+:root[data-theme="light"] .chat-header,
+:root[data-theme="light"] .chat-title h2 {
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .bot-bubble {
+  background: #F0F2F5;
+  border-color: rgba(91, 127, 255, 0.2);
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .analysis-result {
+  background: rgba(91, 127, 255, 0.04);
+  border-color: rgba(91, 127, 255, 0.15);
+}
+
+:root[data-theme="light"] .result-section-label {
+  color: #3D4556 !important;
+}
+
+:root[data-theme="light"] .analysis-result .explanation {
+  color: #3D4556 !important;
+}
+
+:root[data-theme="light"] .signal-real {
+  background: rgba(91, 127, 255, 0.12);
+  color: #5B7FFF;
+}
+
+:root[data-theme="light"] .signal-fake {
+  background: rgba(255, 95, 143, 0.12);
+  color: #FF5F8F;
+}
+
+:root[data-theme="light"] .tips-list li {
+  color: #3D4556 !important;
+}
+
+:root[data-theme="light"] .article-title {
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .article-source {
+  color: #3D4556 !important;
+}
+
+:root[data-theme="light"] .chat-markdown .chat-h2 {
+  background: none;
+  -webkit-background-clip: unset;
+  -webkit-text-fill-color: unset;
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .chat-markdown .chat-h3 {
+  color: #0F1117;
+}
+
+:root[data-theme="light"] .chat-markdown .chat-p {
+  color: #3D4556 !important;
+}
+
+/* ============================================================
    CHATBOT
    ============================================================ */
 .chat-container {
